@@ -33,7 +33,11 @@ export function LoginFacialStep({ identifier, onFallback, onLocked, onBack }: Pr
       setSending(false);
       setAttempts((n) => n + 1);
       if (err instanceof ApiError) {
-        const payload = err.payload as { fallback?: string; locked_until?: string } | null;
+        const payload = err.payload as {
+          fallback?: string;
+          locked_until?: string;
+          debug?: { distance: number; threshold: number };
+        } | null;
         if (err.status === 423) {
           onLocked(payload?.locked_until, err.message);
           return;
@@ -42,7 +46,10 @@ export function LoginFacialStep({ identifier, onFallback, onLocked, onBack }: Pr
           onFallback(err.message);
           return;
         }
-        setError(err.message);
+        const dbg = payload?.debug
+          ? ` (distancia ${payload.debug.distance} / umbral ${payload.debug.threshold})`
+          : "";
+        setError(err.message + dbg);
       } else {
         setError("No se pudo verificar tu rostro.");
       }

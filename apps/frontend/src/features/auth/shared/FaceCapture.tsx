@@ -51,6 +51,7 @@ export function FaceCapture({ onCaptured, disabled }: Props) {
     if (camState !== "ready" || captured || disabled) return;
     let raf = 0;
     let stop = false;
+    let passedSince = 0;
     const detector = detectorRef.current;
 
     const tick = async () => {
@@ -64,8 +65,14 @@ export function FaceCapture({ onCaptured, disabled }: Props) {
         if (stop) return;
         setLive(result);
         if (result.passed) {
-          await capture();
-          return;
+          if (!passedSince) passedSince = performance.now();
+          // Capturar solo con el rostro de frente y ojos abiertos; tras 6 s
+          // se captura igual para no dejar al usuario atascado.
+          const timedOut = performance.now() - passedSince > 6000;
+          if ((result.frontal && result.eyesOpen) || timedOut) {
+            await capture();
+            return;
+          }
         }
       } catch {
         setModelError(true);
