@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Container } from "@/components/ui/Container";
 import { ButtonLink } from "@/components/ui/Button";
-import { FaceScanArt } from "./components/FaceScanArt";
+import { CardArt } from "./components/CardArt";
 
 export function LandingPage() {
   return (
@@ -19,16 +19,19 @@ export function LandingPage() {
 
 function Hero() {
   return (
-    <section className="bg-rich-black text-champagne">
-      <Container className="grid items-center gap-12 py-20 sm:py-28 lg:grid-cols-2">
+    <section className="relative overflow-hidden bg-charcoal text-white">
+      <div className="pointer-events-none absolute -right-40 -top-40 h-96 w-96 rounded-full bg-cyan/20 blur-3xl" />
+      <Container className="relative grid items-center gap-12 py-20 sm:py-28 lg:grid-cols-2">
         <div>
-          <p className="mb-5 inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-green-sheen">
+          <p className="mb-5 inline-block rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-cyan">
             Banca 100% digital
           </p>
-          <h1 className="text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
-            Un banco que <span className="text-green-sheen">se abre solo</span> con tu rostro.
+          <h1 className="text-5xl font-extrabold leading-[1.03] tracking-tight sm:text-6xl">
+            Tu dinero,
+            <br />
+            <span className="text-cyan">a un vistazo.</span>
           </h1>
-          <p className="mt-6 max-w-lg text-lg text-opal">
+          <p className="mt-6 max-w-lg text-lg text-white/65">
             Abre tu cuenta en minutos con tu DNI y una prueba de vida. Entra a la Banca por Internet
             sin contraseñas: solo mírate.
           </p>
@@ -36,21 +39,16 @@ function Hero() {
             <ButtonLink to="/registro" size="lg" variant="primary">
               Abrir cuenta
             </ButtonLink>
-            <ButtonLink
-              to="/login"
-              size="lg"
-              variant="secondary"
-              className="border-opal text-opal hover:bg-opal hover:text-rich-black"
-            >
+            <ButtonLink to="/login" size="lg" variant="secondary">
               Banca por Internet
             </ButtonLink>
           </div>
-          <p className="mt-5 text-sm text-opal/80">
+          <p className="mt-5 text-sm text-white/40">
             Identidad validada con RENIEC · Sin costo de apertura ni mantenimiento
           </p>
         </div>
-        <div className="mx-auto w-full max-w-sm">
-          <FaceScanArt />
+        <div className="mx-auto w-full max-w-md">
+          <CardArt />
         </div>
       </Container>
     </section>
@@ -77,14 +75,12 @@ const acciones: Accion[] = [
 
 function QueNecesitasHoy() {
   return (
-    <section id="hoy" className="bg-champagne-200 py-20 sm:py-28">
+    <section id="hoy" className="bg-ink py-20 text-white sm:py-28">
       <Container>
-        <h2 className="text-3xl font-extrabold tracking-tight text-rich-black sm:text-4xl">
+        <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
           ¿Qué necesitas hacer hoy?
         </h2>
-        <p className="mt-3 max-w-2xl text-rich-black/70">
-          Entra directo a lo que viniste a hacer.
-        </p>
+        <p className="mt-3 max-w-2xl text-white/60">Entra directo a lo que viniste a hacer.</p>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {acciones.map((a) => (
@@ -100,28 +96,31 @@ function AccionCard({ accion }: { accion: Accion }) {
   const inner = (
     <>
       <div className="flex items-start justify-between gap-3">
-        <h3 className="text-lg font-semibold text-rich-black">{accion.titulo}</h3>
+        <h3 className="text-lg font-semibold text-white">{accion.titulo}</h3>
         {accion.pronto ? (
-          <span className="shrink-0 rounded-full bg-opal/40 px-2 py-0.5 text-[11px] font-semibold text-rich-black/60">
+          <span className="shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-semibold text-white/50">
             Pronto
           </span>
         ) : (
-          <span aria-hidden className="text-seaweed transition group-hover:translate-x-0.5">
+          <span aria-hidden className="text-cyan transition group-hover:translate-x-0.5">
             →
           </span>
         )}
       </div>
-      <p className="mt-2 text-sm text-rich-black/65">{accion.detalle}</p>
+      <p className="mt-2 text-sm text-white/55">{accion.detalle}</p>
     </>
   );
 
-  const base = "group rounded-2xl border border-opal/60 bg-white p-6 transition";
+  const base = "group rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition";
 
   if (accion.pronto || !accion.to) {
-    return <div className={`${base} opacity-70`}>{inner}</div>;
+    return <div className={`${base} opacity-60`}>{inner}</div>;
   }
   return (
-    <Link to={accion.to} className={`${base} hover:-translate-y-0.5 hover:border-seaweed hover:shadow-sm`}>
+    <Link
+      to={accion.to}
+      className={`${base} hover:-translate-y-0.5 hover:border-cyan/50 hover:bg-white/[0.06]`}
+    >
       {inner}
     </Link>
   );
@@ -146,20 +145,20 @@ const features = [
 
 function Producto() {
   return (
-    <section id="producto" className="py-20 sm:py-28">
+    <section id="producto" className="bg-charcoal py-20 text-white sm:py-28">
       <Container>
-        <h2 className="text-3xl font-extrabold tracking-tight text-rich-black sm:text-4xl">
+        <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
           Una cuenta pensada para el celular
         </h2>
-        <p className="mt-3 max-w-2xl text-rich-black/70">
+        <p className="mt-3 max-w-2xl text-white/60">
           Luma Bank reemplaza el trámite presencial por un flujo digital verificado de punta a punta.
         </p>
         <div className="mt-12 grid gap-10 sm:grid-cols-3">
           {features.map((f) => (
             <div key={f.title}>
-              <div className="mb-4 h-px w-12 bg-green-sheen" />
-              <h3 className="text-xl font-bold text-rich-black">{f.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-rich-black/70">{f.body}</p>
+              <div className="mb-4 h-px w-12 bg-cyan" />
+              <h3 className="text-xl font-bold text-white">{f.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-white/60">{f.body}</p>
             </div>
           ))}
         </div>
@@ -190,17 +189,17 @@ const steps = [
 
 function ComoFunciona() {
   return (
-    <section id="como-funciona" className="bg-champagne py-20 sm:py-28">
+    <section id="como-funciona" className="bg-ink py-20 text-white sm:py-28">
       <Container>
-        <h2 className="text-3xl font-extrabold tracking-tight text-rich-black sm:text-4xl">
+        <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
           Cómo funciona la apertura
         </h2>
         <div className="mt-12 grid gap-6 sm:grid-cols-3">
           {steps.map((s) => (
-            <div key={s.n} className="rounded-2xl bg-white p-6 shadow-sm">
-              <span className="text-sm font-bold text-seaweed">{s.n}</span>
-              <h3 className="mt-2 text-lg font-semibold text-rich-black">{s.title}</h3>
-              <p className="mt-2 text-sm text-rich-black/70">{s.body}</p>
+            <div key={s.n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+              <span className="text-sm font-bold text-cyan">{s.n}</span>
+              <h3 className="mt-2 text-lg font-semibold text-white">{s.title}</h3>
+              <p className="mt-2 text-sm text-white/60">{s.body}</p>
             </div>
           ))}
         </div>
@@ -213,23 +212,20 @@ function ComoFunciona() {
 
 function CtaFinal() {
   return (
-    <section className="bg-seaweed text-white">
-      <Container className="flex flex-col items-center gap-7 py-16 text-center sm:py-20">
-        <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
-          Tu banco, listo en lo que dura un café.
-        </h2>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <ButtonLink to="/registro" size="lg" variant="primary">
-            Abrir cuenta
-          </ButtonLink>
-          <ButtonLink
-            to="/login"
-            size="lg"
-            variant="secondary"
-            className="border-white text-white hover:bg-white hover:text-seaweed"
-          >
-            Ya tengo cuenta
-          </ButtonLink>
+    <section className="bg-charcoal">
+      <Container className="py-16 sm:py-24">
+        <div className="relative overflow-hidden rounded-3xl border border-cyan/20 bg-gradient-to-br from-cyan/15 to-transparent p-10 text-center sm:p-16">
+          <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+            Tu banco, listo en lo que dura un café.
+          </h2>
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+            <ButtonLink to="/registro" size="lg" variant="primary">
+              Abrir cuenta
+            </ButtonLink>
+            <ButtonLink to="/login" size="lg" variant="secondary">
+              Ya tengo cuenta
+            </ButtonLink>
+          </div>
         </div>
       </Container>
     </section>

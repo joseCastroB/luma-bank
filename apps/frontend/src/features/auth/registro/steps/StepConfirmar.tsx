@@ -13,13 +13,13 @@ export function StepConfirmar({ data, next, back }: Props) {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="rounded-xl bg-champagne p-5">
-        <p className="text-xs font-semibold uppercase tracking-wide text-seaweed">Según RENIEC</p>
-        <p className="mt-1 text-lg font-bold text-rich-black">{id.nombre_completo}</p>
-        <p className="text-sm text-rich-black/60">DNI {id.dni}</p>
+      <div className="rounded-xl bg-white/[0.04] p-5">
+        <p className="text-xs font-semibold uppercase tracking-wide text-cyan">Según RENIEC</p>
+        <p className="mt-1 text-lg font-bold text-white">{id.nombre_completo}</p>
+        <p className="text-sm text-white/60">DNI {id.dni}</p>
       </div>
 
-      <p className="text-sm text-rich-black/80">¿Eres tú?</p>
+      <p className="text-sm text-white/80">¿Eres tú?</p>
 
       <div className="flex flex-col gap-2 sm:flex-row">
         <Button size="lg" onClick={next} className="sm:flex-1">

@@ -34,7 +34,7 @@ export function LoginFlow() {
 
   if (stage === "facial") {
     return (
-      <Suspense fallback={<p className="text-sm text-rich-black/60">Cargando cámara…</p>}>
+      <Suspense fallback={<p className="text-sm text-white/60">Cargando cámara…</p>}>
         <LoginFacialStep
           identifier={identifier}
           onBack={() => setStage("identify")}
@@ -57,7 +57,7 @@ export function LoginFlow() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-bold text-rich-black">Cuenta bloqueada</h1>
+      <h1 className="text-2xl font-bold text-white">Cuenta bloqueada</h1>
       <Alert tone="error">
         {lockInfo.detail}
         {lockInfo.until && (
@@ -93,8 +93,8 @@ function IdentifyStep({
       className="flex flex-col gap-4"
     >
       <div>
-        <h1 className="text-2xl font-bold text-rich-black">Banca por Internet</h1>
-        <p className="mt-1 text-sm text-rich-black/60">Ingresa con tu rostro.</p>
+        <h1 className="text-2xl font-bold text-white">Banca por Internet</h1>
+        <p className="mt-1 text-sm text-white/60">Ingresa con tu rostro.</p>
       </div>
       <TextField
         label="Correo o DNI"
@@ -108,7 +108,7 @@ function IdentifyStep({
       <button
         type="button"
         onClick={() => ok && onUsePassword(id.trim())}
-        className="text-sm text-seaweed underline disabled:opacity-50"
+        className="text-sm text-cyan underline disabled:opacity-50"
         disabled={!ok}
       >
         Prefiero usar contraseña + código

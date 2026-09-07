@@ -10,24 +10,24 @@ type Props = ComponentProps<"input"> & {
 export function TextField({ label, error, hint, className = "", ...props }: Props) {
   const id = useId();
   return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-sm font-medium text-rich-black">
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={id} className="text-sm font-medium text-white/90">
         {label}
       </label>
       <input
         id={id}
         className={
-          "rounded-lg border bg-white px-3 py-2.5 text-sm outline-none transition " +
-          "focus:border-seaweed " +
-          (error ? "border-red-400" : "border-opal") +
+          "rounded-lg border bg-charcoal px-3 py-2.5 text-sm text-white outline-none transition " +
+          "placeholder:text-white/30 focus:border-cyan " +
+          (error ? "border-red-500/70" : "border-white/15") +
           " " +
           className
         }
         aria-invalid={error ? true : undefined}
         {...props}
       />
-      {hint && !error && <p className="text-xs text-rich-black/60">{hint}</p>}
-      {error && <p className="text-xs font-medium text-red-700">{error}</p>}
+      {hint && !error && <p className="text-xs text-white/45">{hint}</p>}
+      {error && <p className="text-xs font-medium text-red-400">{error}</p>}
     </div>
   );
 }

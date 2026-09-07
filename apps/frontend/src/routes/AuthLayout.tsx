@@ -4,10 +4,10 @@ import { Logo } from "@/components/ui/Logo";
 
 export function AuthLayout() {
   return (
-    <div className="flex min-h-screen flex-col bg-champagne-200">
-      <header className="bg-rich-black text-champagne">
+    <div className="flex min-h-screen flex-col bg-charcoal">
+      <header className="border-b border-white/5 bg-charcoal text-white">
         <Container className="flex h-16 items-center">
-          <Link to="/" className="text-champagne" aria-label="Luma Bank - inicio">
+          <Link to="/" className="text-white" aria-label="Luma Bank - inicio">
             <Logo />
           </Link>
         </Container>
