@@ -3,7 +3,7 @@
 from django.core.exceptions import ImproperlyConfigured
 
 from .base import *  # noqa: F403
-from .base import DNI_VALIDATION_MODE, env
+from .base import DNI_VALIDATION_MODE, FACE_EMBEDDING_ENCRYPTION_KEY, env
 
 DEBUG = False
 
@@ -14,6 +14,11 @@ ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS")
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 if SECRET_KEY == "insecure-dev-key-change-me":
     raise ImproperlyConfigured("DJANGO_SECRET_KEY debe definirse en produccion.")
+
+# La clave de cifrado de embeddings/TOTP es obligatoria en produccion (en dev se
+# deriva del SECRET_KEY, ver apps/accounts/services/crypto.py).
+if not FACE_EMBEDDING_ENCRYPTION_KEY:
+    raise ImproperlyConfigured("FACE_EMBEDDING_ENCRYPTION_KEY debe definirse en produccion.")
 
 # ---------------------------------------------------------------------------
 # GUARDIA FAIL-SAFE: la validacion de DNI JAMAS puede correr en modo 'mock'

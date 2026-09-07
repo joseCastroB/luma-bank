@@ -14,12 +14,14 @@ from __future__ import annotations
 import base64
 import binascii
 import hashlib
+import logging
 import os
 from array import array
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
+
+logger = logging.getLogger("luma.crypto")
 
 _NONCE_BYTES = 12
 
@@ -27,10 +29,14 @@ _NONCE_BYTES = 12
 def _load_key() -> bytes:
     raw = getattr(settings, "FACE_EMBEDDING_ENCRYPTION_KEY", "") or ""
     if not raw:
-        raise ImproperlyConfigured(
-            "FACE_EMBEDDING_ENCRYPTION_KEY no está definida: no se puede cifrar "
-            "el embedding facial ni el secreto TOTP."
+        # Sin clave explícita: se deriva del SECRET_KEY para no bloquear el
+        # desarrollo. config.settings.prod EXIGE la variable y aborta el arranque
+        # si falta, así que este camino solo ocurre en dev/tests.
+        logger.warning(
+            "FACE_EMBEDDING_ENCRYPTION_KEY no está definida; usando una clave "
+            "derivada del SECRET_KEY (solo desarrollo). Define la variable en .env."
         )
+        return hashlib.sha256(f"luma-dev-embedding-key:{settings.SECRET_KEY}".encode()).digest()
     # base64-urlsafe de 32 bytes
     try:
         decoded = base64.urlsafe_b64decode(raw)
