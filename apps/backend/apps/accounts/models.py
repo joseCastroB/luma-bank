@@ -41,6 +41,11 @@ class User(AbstractUser):
     # Secreto TOTP cifrado (AES-256-GCM + base64). Ver services/crypto.py.
     totp_secret_encrypted = models.CharField(max_length=255, blank=True, default="")
 
+    # --- Política de intentos de login (HU03) ---
+    failed_facial_attempts = models.PositiveSmallIntegerField(default=0)
+    failed_login_attempts = models.PositiveSmallIntegerField(default=0)
+    locked_until = models.DateTimeField(null=True, blank=True)
+
     USERNAME_FIELD = "username"  # se mantiene; username = email en el registro
     REQUIRED_FIELDS = ["email"]
 
@@ -91,6 +96,45 @@ class FaceEmbedding(models.Model):
 
     def __str__(self) -> str:
         return f"FaceEmbedding<{self.user_id}> {self.object_key}"
+
+
+class LoginAttempt(models.Model):
+    """Auditoría de cada intento de inicio de sesión (HU03)."""
+
+    class Method(models.TextChoices):
+        FACIAL = "facial", "reconocimiento facial"
+        PASSWORD_TOTP = "password_totp", "contraseña + TOTP"
+
+    class Outcome(models.TextChoices):
+        SUCCESS = "success", "éxito"
+        BAD_FACE = "bad_face", "rostro no coincide"
+        BAD_LIVENESS = "bad_liveness", "prueba de vida fallida (sospechoso)"
+        BAD_PASSWORD = "bad_password", "contraseña incorrecta"
+        BAD_TOTP = "bad_totp", "código TOTP incorrecto"
+        LOCKED = "locked", "cuenta bloqueada"
+        UNKNOWN_USER = "unknown_user", "usuario no encontrado"
+
+    user = models.ForeignKey(
+        "accounts.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="login_attempts",
+    )
+    identifier = models.CharField(max_length=254, help_text="email o DNI ingresado")
+    method = models.CharField(max_length=20, choices=Method.choices)
+    outcome = models.CharField(max_length=20, choices=Outcome.choices)
+    suspicious = models.BooleanField(default=False)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=300, blank=True, default="")
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = "accounts_login_attempt"
+        indexes = [models.Index(fields=["identifier", "created_at"])]
+
+    def __str__(self) -> str:
+        return f"{self.identifier} [{self.method}] -> {self.outcome}"
 
 
 class DniValidationLog(models.Model):
