@@ -139,7 +139,7 @@ const features = [
   },
   {
     title: "Tu foto no se guarda",
-    body: "Convertimos tu rostro en una huella numérica cifrada. Ni siquiera nosotros podemos reconstruir tu imagen.",
+    body: "Convertimos tu rostro en una huella numérica cifrada.",
   },
 ];
 
@@ -148,7 +148,7 @@ function Producto() {
     <section id="producto" className="bg-charcoal py-20 text-white sm:py-28">
       <Container>
         <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
-          Una cuenta pensada para el celular
+          Una cuenta pensada para la web
         </h2>
         <p className="mt-3 max-w-2xl text-white/60">
           Luma Bank reemplaza el trámite presencial por un flujo digital verificado de punta a punta.
