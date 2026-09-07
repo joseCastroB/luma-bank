@@ -9,7 +9,7 @@ export function Footer() {
           <Logo />
         </span>
         <p className="text-sm">
-          © {new Date().getFullYear()} Luma Bank. Proyecto académico — Curso Integrador II (UTP).
+          © {new Date().getFullYear()} Luma Bank.
         </p>
       </Container>
     </footer>

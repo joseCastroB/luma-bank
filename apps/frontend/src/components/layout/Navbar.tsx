@@ -5,8 +5,8 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Logo } from "@/components/ui/Logo";
 
 const sections = [
+  { href: "/#hoy", label: "Qué necesitas hoy" },
   { href: "/#producto", label: "Producto" },
-  { href: "/#seguridad", label: "Seguridad" },
   { href: "/#como-funciona", label: "Cómo funciona" },
 ];
 
