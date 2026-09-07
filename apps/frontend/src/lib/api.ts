@@ -44,7 +44,10 @@ async function request<T>(
   const res = await fetch(`${API_URL}${path}`, {
     method,
     headers,
-    credentials: "include",
+    // El SPA se autentica con JWT en el header Authorization, nunca con cookies.
+    // Así una sesión del admin de Django abierta en el mismo navegador no
+    // "contamina" las peticiones de la API (evita fallos de CSRF).
+    credentials: "omit",
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   const text = await res.text();
