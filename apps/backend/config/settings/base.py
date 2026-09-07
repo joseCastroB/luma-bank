@@ -157,6 +157,10 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "anon": "30/min",
         "user": "120/min",
+        # Scopes especificos (ScopedRateThrottle) para endpoints sensibles.
+        "dni_validation": "15/min",
+        "registro": "5/min",
+        "login": "10/min",
     },
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",

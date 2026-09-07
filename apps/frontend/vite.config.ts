@@ -11,6 +11,11 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
+  build: {
+    // El chunk de reconocimiento facial (face-api + tfjs + mediapipe) es grande
+    // a propósito: se carga solo al llegar al paso de prueba de vida.
+    chunkSizeWarningLimit: 1600,
+  },
   server: {
     host: true, // escucha en 0.0.0.0 para funcionar dentro de Docker
     port: 5173,
