@@ -27,21 +27,32 @@ export interface DescriptorResult {
   score: number;
 }
 
-/** Devuelve el descriptor del rostro más prominente, o null si no hay uno claro. */
+/**
+ * Toma varias muestras y devuelve el descriptor de la detección con mayor
+ * confianza (reduce el ruido frente a un solo cuadro). null si no hay rostro claro.
+ */
 export async function extractDescriptor(
   video: HTMLVideoElement,
+  samples = 4,
 ): Promise<DescriptorResult | null> {
   await loadFaceModels();
-  const detection = await faceapi
-    .detectSingleFace(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }))
-    .withFaceLandmarks()
-    .withFaceDescriptor();
+  const opts = new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 });
 
-  if (!detection) return null;
-  return {
-    descriptor: Array.from(detection.descriptor),
-    score: detection.detection.score,
-  };
+  let best: DescriptorResult | null = null;
+  for (let i = 0; i < samples; i++) {
+    const detection = await faceapi
+      .detectSingleFace(video, opts)
+      .withFaceLandmarks()
+      .withFaceDescriptor();
+    if (detection) {
+      const score = detection.detection.score;
+      if (!best || score > best.score) {
+        best = { descriptor: Array.from(detection.descriptor), score };
+      }
+    }
+    if (i < samples - 1) await new Promise((r) => setTimeout(r, 120));
+  }
+  return best;
 }
 
 /** Distancia euclidiana entre dos descriptores (menor = más parecidos). */

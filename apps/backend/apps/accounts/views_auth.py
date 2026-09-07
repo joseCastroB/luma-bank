@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 
+from django.conf import settings
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -119,6 +120,11 @@ class FacialLoginView(APIView):
             body["detail"] = (
                 "No pudimos reconocerte tras varios intentos. Usa tu correo, contraseña y código."
             )
+        if settings.DEBUG:
+            body["debug"] = {
+                "distance": round(check.distance, 4),
+                "threshold": settings.FACE_MATCH_THRESHOLD,
+            }
         return Response(body, status=status.HTTP_401_UNAUTHORIZED)
 
 
