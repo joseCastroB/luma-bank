@@ -101,7 +101,7 @@ export function FaceCapture({ onCaptured, disabled }: Props) {
         </div>
       </div>
 
-      <div className="flex gap-2 text-xs">
+      <div className="flex justify-center gap-2 text-xs">
         <Badge on={captured || live?.checks.includes("blink")}>Parpadeo</Badge>
         <Badge on={captured || live?.checks.includes("head_turn")}>Giro de cabeza</Badge>
       </div>
