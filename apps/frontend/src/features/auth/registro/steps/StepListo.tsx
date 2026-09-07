@@ -1,11 +1,7 @@
 import { useState } from "react";
 import { ButtonLink } from "@/components/ui/Button";
+import { QrCode } from "@/components/ui/QrCode";
 import type { RegistroResponse } from "@/lib/api";
-
-/** QR del otpauth:// usando la API pública de imágenes de charts (solo lectura). */
-function qrUrl(data: string): string {
-  return `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(data)}`;
-}
 
 export function StepListo({ result }: { result: RegistroResponse }) {
   const [showSecret, setShowSecret] = useState(false);
@@ -35,10 +31,9 @@ export function StepListo({ result }: { result: RegistroResponse }) {
           Si el reconocimiento facial falla, entrarás con correo, contraseña y un código de tu app de
           autenticación. Escanéalo ahora:
         </p>
-        <img
-          src={qrUrl(result.totp.otpauth_uri)}
-          alt="Código QR para configurar TOTP"
-          className="mx-auto my-3 h-44 w-44 rounded-lg bg-white p-2"
+        <QrCode
+          value={result.totp.otpauth_uri}
+          className="mx-auto my-3 w-44 rounded-lg bg-white p-2"
         />
         <button
           type="button"
