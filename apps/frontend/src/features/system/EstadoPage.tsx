@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { getHealth, type HealthResponse } from "@/lib/api";
 
-type Status = { kind: "loading" } | { kind: "ok"; data: HealthResponse } | { kind: "error"; message: string };
+type Status =
+  | { kind: "loading" }
+  | { kind: "ok"; data: HealthResponse }
+  | { kind: "error"; message: string };
 
-export default function App() {
+/** Pantalla interna: estado del API y sus dependencias. */
+export function EstadoPage() {
   const [status, setStatus] = useState<Status>({ kind: "loading" });
 
   useEffect(() => {
@@ -15,20 +20,10 @@ export default function App() {
   }, []);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center gap-6 px-6 text-center">
-      <div className="flex items-center gap-3">
-        <img src="/luma.svg" alt="" className="h-10 w-10" />
-        <h1 className="text-3xl font-bold text-rich-black">Luma Bank</h1>
-      </div>
+    <div className="rounded-2xl border border-opal/60 bg-white p-8">
+      <h1 className="text-2xl font-bold text-rich-black">Estado del sistema</h1>
 
-      <p className="text-seaweed">
-        Scaffolding del Sprint 0 operativo. La landing (HU01) llega en el Sprint 1.
-      </p>
-
-      <section className="w-full rounded-xl border border-opal bg-white/60 p-5 text-left">
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-seaweed">
-          Estado de la API
-        </h2>
+      <div className="mt-4">
         {status.kind === "loading" && <p className="text-rich-black/70">Consultando /api/health/…</p>}
         {status.kind === "error" && (
           <p className="text-red-700">No se pudo contactar la API: {status.message}</p>
@@ -47,22 +42,11 @@ export default function App() {
             ))}
           </dl>
         )}
-      </section>
-
-      <div className="flex gap-3">
-        <button
-          type="button"
-          className="rounded-lg bg-green-sheen px-5 py-2.5 font-semibold text-rich-black transition hover:brightness-95"
-        >
-          Abrir cuenta
-        </button>
-        <button
-          type="button"
-          className="rounded-lg border border-seaweed px-5 py-2.5 font-semibold text-seaweed transition hover:bg-seaweed hover:text-white"
-        >
-          Banca por Internet
-        </button>
       </div>
-    </main>
+
+      <Link to="/" className="mt-6 inline-block text-sm font-semibold text-seaweed hover:underline">
+        ← Volver al inicio
+      </Link>
+    </div>
   );
 }
