@@ -17,7 +17,9 @@ export function Stepper({ steps, current }: { steps: string[]; current: number }
             >
               {state === "done" ? "✓" : i + 1}
             </span>
-            <span className="hidden text-[11px] text-white/50 sm:block">{label}</span>
+            <span className="hidden text-center text-[11px] leading-tight text-white/50 sm:block">
+              {label}
+            </span>
           </li>
         );
       })}

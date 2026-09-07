@@ -31,10 +31,7 @@ export function StepListo({ result }: { result: RegistroResponse }) {
           Si el reconocimiento facial falla, entrarás con correo, contraseña y un código de tu app de
           autenticación. Escanéalo ahora:
         </p>
-        <QrCode
-          value={result.totp.otpauth_uri}
-          className="mx-auto my-3 w-44 rounded-lg bg-white p-2"
-        />
+        <QrCode value={result.totp.otpauth_uri} size={196} className="my-4" />
         <button
           type="button"
           className="text-xs text-cyan underline"
