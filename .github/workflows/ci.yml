@@ -1,0 +1,103 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # GUARDIA: bloquea el pipeline si DNI_VALIDATION_MODE=mock esta en un archivo
+  # que aplica a produccion. Todos los demas jobs dependen de este.
+  # ---------------------------------------------------------------------------
+  guard-dni-mode:
+    name: Guardia DNI_VALIDATION_MODE
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verificar que 'mock' no llegue a produccion
+        run: bash scripts/check_dni_validation_mode.sh
+
+  backend:
+    name: Backend (Django + pytest)
+    runs-on: ubuntu-24.04
+    needs: guard-dni-mode
+    defaults:
+      run:
+        working-directory: apps/backend
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: luma
+          POSTGRES_PASSWORD: luma
+          POSTGRES_DB: luma
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U luma -d luma"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+      valkey:
+        image: valkey/valkey:8
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "valkey-cli ping"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      DJANGO_SETTINGS_MODULE: config.settings.dev
+      DJANGO_SECRET_KEY: ci-insecure-key-not-for-production-000000000000
+      DATABASE_URL: postgres://luma:luma@localhost:5432/luma
+      REDIS_URL: redis://localhost:6379/0
+      # En CI la validacion de DNI corre en 'mock': jamas se llama a LionAPI
+      # (consume creditos reales). Permitido por la guardia (archivo de workflow).
+      DNI_VALIDATION_MODE: mock
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: apps/backend/requirements*.txt
+      - run: pip install -r requirements-dev.txt
+      - name: Ruff (lint)
+        run: ruff check .
+      - name: Ruff (format check)
+        run: ruff format --check .
+      - name: Migraciones al dia
+        run: python manage.py makemigrations --check --dry-run
+      - name: pytest
+        run: pytest --cov --cov-report=term-missing
+
+  frontend:
+    name: Frontend (Vite build + lint)
+    runs-on: ubuntu-24.04
+    needs: guard-dni-mode
+    defaults:
+      run:
+        working-directory: apps/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: apps/frontend/package-lock.json
+      - run: npm ci
+      - name: ESLint
+        run: npm run lint
+      - name: Type check + build
+        run: npm run build
+
+  docker-build:
+    name: Docker build (imagenes de produccion)
+    runs-on: ubuntu-24.04
+    needs: guard-dni-mode
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar .env
+        run: cp .env.example .env
+      - name: Build backend + frontend
+        run: docker compose build backend frontend

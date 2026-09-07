@@ -1,0 +1,13 @@
+# Normaliza finales de linea a LF dentro del repo (equipo mixto Windows/Linux).
+# Critico para los scripts .sh: en el contenedor y en CI corren con bash.
+* text=auto eol=lf
+
+*.sh    text eol=lf
+Makefile text eol=lf
+*.svg   text eol=lf
+
+# Binarios: no tocar
+*.png   binary
+*.jpg   binary
+*.ico   binary
+*.sqlite3 binary
