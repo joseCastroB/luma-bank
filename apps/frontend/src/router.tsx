@@ -1,9 +1,11 @@
 import { createBrowserRouter } from "react-router-dom";
 import { RootLayout } from "@/routes/RootLayout";
 import { AuthLayout } from "@/routes/AuthLayout";
+import { RequireAuth } from "@/routes/RequireAuth";
 import { LandingPage } from "@/features/landing/LandingPage";
 import { RegistroPage } from "@/features/auth/RegistroPage";
 import { LoginPage } from "@/features/auth/LoginPage";
+import { AppHome } from "@/features/app/AppHome";
 import { EstadoPage } from "@/features/system/EstadoPage";
 import { NotFoundPage } from "@/features/system/NotFoundPage";
 
@@ -19,6 +21,10 @@ export const router = createBrowserRouter([
       { path: "login", element: <LoginPage /> },
       { path: "estado", element: <EstadoPage /> },
     ],
+  },
+  {
+    element: <RequireAuth />,
+    children: [{ path: "app", element: <AppHome /> }],
   },
   { path: "*", element: <NotFoundPage /> },
 ]);
