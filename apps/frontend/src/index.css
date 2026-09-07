@@ -11,6 +11,9 @@
   --color-opal: #9dbebb;
   --color-champagne: #f4e9cd;
 
+  --color-rich-black-700: #0a2b3d;
+  --color-champagne-200: #faf4e6;
+
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
@@ -18,10 +21,24 @@
   color-scheme: light;
 }
 
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
   font-family: var(--font-sans);
-  background-color: var(--color-champagne);
+  background-color: var(--color-champagne-200);
   color: var(--color-rich-black);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-seaweed);
+  outline-offset: 2px;
 }
