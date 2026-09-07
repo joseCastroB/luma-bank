@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -22,6 +23,7 @@ from .services.identity import (
 )
 
 logger = logging.getLogger("luma.accounts")
+User = get_user_model()
 
 
 class ValidarDniView(APIView):
@@ -35,6 +37,19 @@ class ValidarDniView(APIView):
         serializer = DniValidationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         dni = serializer.validated_data["dni"]
+
+        # Cortar temprano si el DNI ya tiene cuenta (evita recorrer todo el
+        # asistente para rechazar al final). El check final en RegistroView se
+        # mantiene como autoridad.
+        if User.objects.filter(dni=dni).exists():
+            return Response(
+                {
+                    "detail": (
+                        "Este DNI ya tiene una cuenta en Luma Bank. Ingresa a Banca por Internet."
+                    )
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
 
         mode = settings.DNI_VALIDATION_MODE
         try:

@@ -64,6 +64,18 @@ class TestValidarDni:
         resp = client.post(reverse("accounts:validar-dni"), {"dni": "123"}, format="json")
         assert resp.status_code == 400
 
+    def test_dni_already_registered(self, client, settings, _fake_minio):
+        settings.DNI_VALIDATION_MODE = "mock"
+        assert (
+            client.post(reverse("accounts:registro"), _payload(), format="json").status_code == 201
+        )
+        # El DNI de _payload() ya tiene cuenta -> validar-dni corta en el paso 1.
+        resp = client.post(
+            reverse("accounts:validar-dni"), {"dni": _payload()["dni"]}, format="json"
+        )
+        assert resp.status_code == 409
+        assert "ya tiene una cuenta" in resp.json()["detail"].lower()
+
 
 @pytest.mark.django_db
 class TestRegistro:
