@@ -1,0 +1,10 @@
+# Luma Bank - Backend dev/test dependencies
+# Se instala encima de requirements.txt. Fijado: 2026-09-07
+-r requirements.txt
+
+pytest==9.1.1
+pytest-django==4.14.0
+pytest-cov==7.1.0
+ruff==0.16.6                       # linter + formatter
+factory-boy==3.3.3                 # factories para tests
+responses==0.26.3                  # mock de HTTP (LionAPI en tests - NUNCA llamadas reales)

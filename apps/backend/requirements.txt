@@ -1,0 +1,18 @@
+# Luma Bank - Backend runtime dependencies
+# Todas las versiones fijadas EXACTAS (==). No usar rangos (^, ~, >=).
+# Al actualizar una version, actualizar tambien /VERSIONS.md en el mismo commit.
+# Fijado: 2026-09-07
+
+Django==5.2.17                     # LTS, soporte hasta 2028
+djangorestframework==3.18.0        # compatible con Django 5.2
+django-cors-headers==4.9.0
+django-environ==0.14.0             # lee variables de entorno / DATABASE_URL
+psycopg[binary]==3.3.5             # driver PostgreSQL 3 (wheels precompilados)
+redis==8.1.0                       # cliente para Valkey (wire-compatible con Redis)
+gunicorn==26.2.0                   # WSGI server para produccion
+djangorestframework-simplejwt==5.5.1
+pyotp==2.10.0                      # TOTP (segundo factor - HU03)
+boto3==1.43.89                    # cliente S3 para MinIO
+django-storages==1.14.6           # backend de almacenamiento S3/MinIO
+cryptography==50.0.1              # AES-256 para cifrar embeddings faciales (HU02)
+whitenoise==6.12.0               # archivos estaticos en produccion
