@@ -88,9 +88,9 @@ export function FaceCapture({ onCaptured, disabled }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative overflow-hidden rounded-xl bg-rich-black">
+      <div className="relative overflow-hidden rounded-xl bg-charcoal">
         <video ref={videoRef} playsInline muted className="aspect-[4/3] w-full -scale-x-100 object-cover" />
-        <div className="absolute inset-x-0 bottom-0 bg-black/50 p-2 text-center text-xs text-champagne">
+        <div className="absolute inset-x-0 bottom-0 bg-black/50 p-2 text-center text-xs text-white">
           {captured
             ? "Rostro capturado ✓"
             : camState === "denied" || camState === "error"
@@ -114,7 +114,7 @@ export function FaceCapture({ onCaptured, disabled }: Props) {
       {error && <Alert tone="error">{error}</Alert>}
 
       {import.meta.env.DEV && !captured && (
-        <button type="button" onClick={simulate} className="self-start text-xs text-rich-black/50 underline">
+        <button type="button" onClick={simulate} className="self-start text-xs text-white/50 underline">
           Simular prueba de vida (solo desarrollo)
         </button>
       )}
@@ -127,7 +127,7 @@ function Badge({ on, children }: { on?: boolean; children: React.ReactNode }) {
     <span
       className={
         "rounded-full px-2 py-1 " +
-        (on ? "bg-green-sheen/30 text-rich-black" : "bg-opal/30 text-rich-black/50")
+        (on ? "bg-cyan/20 text-white" : "bg-white/10 text-white/40")
       }
     >
       {on ? "✓ " : ""}

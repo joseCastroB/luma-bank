@@ -8,26 +8,26 @@ export function StepListo({ result }: { result: RegistroResponse }) {
 
   return (
     <div className="flex flex-col gap-5 text-center">
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-sheen/30 text-2xl">
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-cyan/20 text-2xl">
         ✓
       </div>
       <div>
-        <h2 className="text-xl font-bold text-rich-black">¡Cuenta creada!</h2>
-        <p className="mt-1 text-sm text-rich-black/70">Bienvenid@, {result.full_name}.</p>
+        <h2 className="text-xl font-bold text-white">¡Cuenta creada!</h2>
+        <p className="mt-1 text-sm text-white/70">Bienvenid@, {result.full_name}.</p>
       </div>
 
-      <div className="rounded-xl bg-champagne p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-seaweed">
+      <div className="rounded-xl bg-white/[0.04] p-4">
+        <p className="text-xs font-semibold uppercase tracking-wide text-cyan">
           Tu número de cuenta
         </p>
-        <p className="mt-1 font-mono text-lg font-bold tracking-wider text-rich-black">
+        <p className="mt-1 font-mono text-lg font-bold tracking-wider text-white">
           {result.account_number}
         </p>
       </div>
 
-      <div className="rounded-xl border border-opal/60 p-4 text-left">
-        <p className="text-sm font-semibold text-rich-black">Método de acceso alterno (TOTP)</p>
-        <p className="mt-1 text-xs text-rich-black/60">
+      <div className="rounded-xl border border-white/10 p-4 text-left">
+        <p className="text-sm font-semibold text-white">Método de acceso alterno (TOTP)</p>
+        <p className="mt-1 text-xs text-white/60">
           Si el reconocimiento facial falla, entrarás con correo, contraseña y un código de tu app de
           autenticación. Escanéalo ahora:
         </p>
@@ -37,13 +37,13 @@ export function StepListo({ result }: { result: RegistroResponse }) {
         />
         <button
           type="button"
-          className="text-xs text-seaweed underline"
+          className="text-xs text-cyan underline"
           onClick={() => setShowSecret((v) => !v)}
         >
           {showSecret ? "Ocultar" : "Mostrar"} clave manual
         </button>
         {showSecret && (
-          <p className="mt-1 break-all font-mono text-xs text-rich-black/80">{result.totp.secret}</p>
+          <p className="mt-1 break-all font-mono text-xs text-white/80">{result.totp.secret}</p>
         )}
       </div>
 

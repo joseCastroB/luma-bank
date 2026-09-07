@@ -49,9 +49,9 @@ export function RegistroWizard() {
   const back = useCallback(() => setStep((s) => Math.max(s - 1, 0)), []);
 
   return (
-    <div className="rounded-2xl border border-opal/60 bg-white p-6 sm:p-8">
-      <h1 className="mb-1 text-2xl font-bold text-rich-black">Abrir cuenta</h1>
-      <p className="mb-6 text-sm text-rich-black/60">
+    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 sm:p-8">
+      <h1 className="mb-1 text-2xl font-bold text-white">Abrir cuenta</h1>
+      <p className="mb-6 text-sm text-white/60">
         Sin ir a una agencia. Necesitas tu DNI y unos segundos frente a la cámara.
       </p>
 
@@ -61,7 +61,7 @@ export function RegistroWizard() {
       {step === 1 && <StepConfirmar data={data} next={next} back={back} />}
       {step === 2 && <StepDatos data={data} update={update} next={next} back={back} />}
       {step === 3 && (
-        <Suspense fallback={<p className="text-sm text-rich-black/60">Cargando cámara…</p>}>
+        <Suspense fallback={<p className="text-sm text-white/60">Cargando cámara…</p>}>
           <StepRostro
             data={data}
             update={update}

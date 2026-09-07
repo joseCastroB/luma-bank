@@ -35,7 +35,7 @@ export function LoginPasswordStep({ identifier, reason }: Props) {
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-4">
-      <h1 className="text-2xl font-bold text-rich-black">Acceso alterno</h1>
+      <h1 className="text-2xl font-bold text-white">Acceso alterno</h1>
       {reason && <Alert tone="info">{reason}</Alert>}
 
       <TextField

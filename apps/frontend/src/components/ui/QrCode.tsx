@@ -20,7 +20,7 @@ export function QrCode({ value, size = 176, className = "" }: { value: string; s
         }
       }
     }
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}"><rect width="${size}" height="${size}" fill="#fff"/><g fill="#031926">${rects}</g></svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}"><rect width="${size}" height="${size}" fill="#fff"/><g fill="#19191a">${rects}</g></svg>`;
   }, [value, size]);
 
   return (

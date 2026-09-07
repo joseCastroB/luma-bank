@@ -14,22 +14,22 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 bg-rich-black text-champagne">
+    <header className="sticky top-0 z-40 border-b border-white/5 bg-charcoal/90 text-white backdrop-blur">
       <Container className="flex h-16 items-center justify-between">
-        <Link to="/" className="text-champagne" aria-label="Luma Bank - inicio">
+        <Link to="/" className="text-white" aria-label="Luma Bank - inicio">
           <Logo />
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
           {sections.map((s) => (
-            <a key={s.href} href={s.href} className="text-sm text-opal transition hover:text-champagne">
+            <a key={s.href} href={s.href} className="text-sm text-white/60 transition hover:text-white">
               {s.label}
             </a>
           ))}
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <ButtonLink to="/login" variant="ghost" className="text-champagne hover:bg-white/10">
+          <ButtonLink to="/login" variant="ghost">
             Banca por Internet
           </ButtonLink>
           <ButtonLink to="/registro" variant="primary">
@@ -39,7 +39,7 @@ export function Navbar() {
 
         <button
           type="button"
-          className="rounded-lg p-2 text-champagne md:hidden"
+          className="rounded-lg p-2 text-white md:hidden"
           aria-label="Abrir menú"
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
@@ -57,16 +57,20 @@ export function Navbar() {
               <a
                 key={s.href}
                 href={s.href}
-                className="rounded-lg px-2 py-2 text-opal hover:bg-white/5"
+                className="rounded-lg px-2 py-2 text-white/70 hover:bg-white/5"
                 onClick={() => setOpen(false)}
               >
                 {s.label}
               </a>
             ))}
-            <NavLink to="/login" className="rounded-lg px-2 py-2 hover:bg-white/5" onClick={() => setOpen(false)}>
+            <NavLink
+              to="/login"
+              className="rounded-lg px-2 py-2 text-white/70 hover:bg-white/5"
+              onClick={() => setOpen(false)}
+            >
               Banca por Internet
             </NavLink>
-            <ButtonLink to="/registro" variant="primary" className="mt-1" >
+            <ButtonLink to="/registro" variant="primary" className="mt-1">
               Abrir cuenta
             </ButtonLink>
           </Container>
