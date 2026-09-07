@@ -177,11 +177,15 @@ SIMPLE_JWT = {
 }
 
 # ---------------------------------------------------------------------------
-# CORS
+# CORS / CSRF
 # ---------------------------------------------------------------------------
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:5173")
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[FRONTEND_URL])
 CORS_ALLOW_CREDENTIALS = True
+
+# Django 4+ verifica el header Origin en peticiones POST con cookie de sesión.
+# El SPA vive en FRONTEND_URL, así que ese origen debe ser de confianza.
+CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[FRONTEND_URL])
 
 # ===========================================================================
 # Configuracion de dominio - Luma Bank
