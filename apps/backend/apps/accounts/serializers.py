@@ -100,3 +100,30 @@ class RegistroSerializer(serializers.Serializer):
         if User.objects.filter(dni=attrs["dni"]).exists():
             raise serializers.ValidationError({"dni": "Este DNI ya está registrado."})
         return attrs
+
+
+class _DescriptorField(serializers.ListField):
+    child = serializers.FloatField()
+
+    def to_internal_value(self, data):
+        value = super().to_internal_value(data)
+        if not (MIN_DESCRIPTOR_LEN <= len(value) <= MAX_DESCRIPTOR_LEN):
+            raise serializers.ValidationError(
+                f"El descriptor facial debe tener entre {MIN_DESCRIPTOR_LEN} y "
+                f"{MAX_DESCRIPTOR_LEN} valores."
+            )
+        if any(not math.isfinite(x) for x in value):
+            raise serializers.ValidationError("El descriptor facial contiene valores inválidos.")
+        return value
+
+
+class FacialLoginSerializer(serializers.Serializer):
+    identifier = serializers.CharField()
+    face_descriptor = _DescriptorField()
+    liveness = LivenessSerializer()
+
+
+class PasswordLoginSerializer(serializers.Serializer):
+    identifier = serializers.CharField()
+    password = serializers.CharField(write_only=True, style={"input_type": "password"})
+    totp = serializers.CharField()

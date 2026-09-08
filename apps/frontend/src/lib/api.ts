@@ -1,4 +1,5 @@
 /** Cliente HTTP para la API de Luma Bank. */
+import { getAccessToken } from "./auth";
 
 export const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
@@ -26,10 +27,23 @@ function extractMessage(payload: unknown, status: number): string {
   return `Error ${status}`;
 }
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+async function request<T>(
+  method: string,
+  path: string,
+  body?: unknown,
+  auth = false,
+): Promise<T> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  };
+  if (auth) {
+    const token = getAccessToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
+  }
   const res = await fetch(`${API_URL}${path}`, {
     method,
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    headers,
     credentials: "include",
     body: body === undefined ? undefined : JSON.stringify(body),
   });
@@ -39,8 +53,9 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   return data as T;
 }
 
-export const apiGet = <T>(path: string) => request<T>("GET", path);
-export const apiPost = <T>(path: string, body?: unknown) => request<T>("POST", path, body);
+export const apiGet = <T>(path: string, auth = false) => request<T>("GET", path, undefined, auth);
+export const apiPost = <T>(path: string, body?: unknown, auth = false) =>
+  request<T>("POST", path, body, auth);
 
 // --- Endpoints ---------------------------------------------------------
 
@@ -81,3 +96,44 @@ export interface RegistroResponse {
 }
 export const registrar = (payload: RegistroPayload) =>
   apiPost<RegistroResponse>("/api/v1/accounts/registro/", payload);
+
+// --- HU03: login -----------------------------------------------------
+
+export interface LoginSuccess {
+  access: string;
+  refresh: string;
+  user: { email: string; full_name: string; dni: string | null };
+}
+export interface LoginChallenge {
+  detail: string;
+  fallback?: "password_totp";
+  locked_until?: string;
+}
+
+export const loginFacial = (
+  identifier: string,
+  face_descriptor: number[],
+  liveness: { passed: boolean; checks: string[] },
+) =>
+  apiPost<LoginSuccess>("/api/v1/accounts/login/facial/", {
+    identifier,
+    face_descriptor,
+    liveness,
+  });
+
+export const loginPassword = (identifier: string, password: string, totp: string) =>
+  apiPost<LoginSuccess>("/api/v1/accounts/login/password/", { identifier, password, totp });
+
+export interface Me {
+  email: string;
+  full_name: string;
+  dni: string | null;
+  accounts: {
+    number: string;
+    currency: string;
+    status: string;
+    balance: string;
+    opened_at: string;
+  }[];
+}
+export const getMe = () => apiGet<Me>("/api/v1/accounts/me/", true);
