@@ -71,6 +71,7 @@ desde fuente o migrar a un fork mantenido. Documentar el cambio aquí.
 | django-storages                | 1.14.6    |
 | cryptography                   | 50.0.1    |
 | whitenoise                     | 6.12.0    |
+| requests                       | 2.34.2    |
 
 ### Solo dev/test — `apps/backend/requirements-dev.txt`
 

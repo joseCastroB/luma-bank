@@ -16,3 +16,4 @@ boto3==1.43.89                    # cliente S3 para MinIO
 django-storages==1.14.6           # backend de almacenamiento S3/MinIO
 cryptography==50.0.1              # AES-256 para cifrar embeddings faciales (HU02)
 whitenoise==6.12.0               # archivos estaticos en produccion
+requests==2.34.2                 # cliente HTTP para LionAPI (services/identity.py)
