@@ -16,6 +16,7 @@
   "dependencies": {
     "@mediapipe/tasks-vision": "1.0.1",
     "@vladmandic/face-api": "1.7.15",
+    "qrcode-generator": "2.0.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-router-dom": "7.18.3"

@@ -1,24 +1,21 @@
 @import "tailwindcss";
 
 /*
-  Paleta de marca Luma Bank (mockups de Figma).
-  Con Tailwind v4 estos tokens generan utilidades: bg-rich-black, text-green-sheen, etc.
+  Paleta de marca Luma Bank (rebranding).
+  Con Tailwind v4 estos tokens generan utilidades: bg-charcoal, text-cyan, etc.
 */
 @theme {
-  --color-rich-black: #031926;
-  --color-seaweed: #468189;
-  --color-green-sheen: #77aca2;
-  --color-opal: #9dbebb;
-  --color-champagne: #f4e9cd;
-
-  --color-rich-black-700: #0a2b3d;
-  --color-champagne-200: #faf4e6;
+  --color-ink: #020202; /* fondo más profundo */
+  --color-charcoal: #19191a; /* fondo base / navegación */
+  --color-slate: #373739; /* superficies, tarjetas, bordes */
+  --color-cyan: #60d4ea; /* acento / CTA */
+  --color-cyan-soft: #9ae5f3; /* acento claro / texto de apoyo */
 
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 * {
@@ -33,12 +30,17 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: var(--font-sans);
-  background-color: var(--color-champagne-200);
-  color: var(--color-rich-black);
+  background-color: var(--color-charcoal);
+  color: #ededf0;
   -webkit-font-smoothing: antialiased;
 }
 
+::selection {
+  background: var(--color-cyan);
+  color: var(--color-ink);
+}
+
 :focus-visible {
-  outline: 2px solid var(--color-seaweed);
+  outline: 2px solid var(--color-cyan);
   outline-offset: 2px;
 }

@@ -20,23 +20,23 @@ export function EstadoPage() {
   }, []);
 
   return (
-    <div className="rounded-2xl border border-opal/60 bg-white p-8">
-      <h1 className="text-2xl font-bold text-rich-black">Estado del sistema</h1>
+    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8">
+      <h1 className="text-2xl font-bold text-white">Estado del sistema</h1>
 
       <div className="mt-4">
-        {status.kind === "loading" && <p className="text-rich-black/70">Consultando /api/health/…</p>}
+        {status.kind === "loading" && <p className="text-white/70">Consultando /api/health/…</p>}
         {status.kind === "error" && (
           <p className="text-red-700">No se pudo contactar la API: {status.message}</p>
         )}
         {status.kind === "ok" && (
           <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-            <dt className="text-rich-black/60">status</dt>
+            <dt className="text-white/60">status</dt>
             <dd className="font-medium">{status.data.status}</dd>
-            <dt className="text-rich-black/60">dni_validation_mode</dt>
+            <dt className="text-white/60">dni_validation_mode</dt>
             <dd className="font-medium">{status.data.dni_validation_mode}</dd>
             {Object.entries(status.data.checks).map(([k, v]) => (
               <div key={k} className="contents">
-                <dt className="text-rich-black/60">{k}</dt>
+                <dt className="text-white/60">{k}</dt>
                 <dd className="font-medium">{v}</dd>
               </div>
             ))}
@@ -44,7 +44,7 @@ export function EstadoPage() {
         )}
       </div>
 
-      <Link to="/" className="mt-6 inline-block text-sm font-semibold text-seaweed hover:underline">
+      <Link to="/" className="mt-6 inline-block text-sm font-semibold text-cyan hover:underline">
         ← Volver al inicio
       </Link>
     </div>

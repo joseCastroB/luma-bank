@@ -1,89 +1,164 @@
+import { Link } from "react-router-dom";
 import { Container } from "@/components/ui/Container";
 import { ButtonLink } from "@/components/ui/Button";
-import { FaceScanArt } from "./components/FaceScanArt";
+import { CardArt } from "./components/CardArt";
 
 export function LandingPage() {
   return (
     <>
       <Hero />
+      <QueNecesitasHoy />
       <Producto />
       <ComoFunciona />
-      <Seguridad />
       <CtaFinal />
     </>
   );
 }
 
+/* ------------------------------------------------------------------ */
+
 function Hero() {
   return (
-    <section className="bg-rich-black text-champagne">
-      <Container className="grid items-center gap-12 py-16 sm:py-24 lg:grid-cols-2">
+    <section className="relative overflow-hidden bg-charcoal text-white">
+      <div className="pointer-events-none absolute -right-40 -top-40 h-96 w-96 rounded-full bg-cyan/20 blur-3xl" />
+      <Container className="relative grid items-center gap-12 py-20 sm:py-28 lg:grid-cols-2">
         <div>
-          <p className="mb-4 inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-green-sheen">
+          <p className="mb-5 inline-block rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-cyan">
             Banca 100% digital
           </p>
-          <h1 className="text-4xl font-extrabold leading-tight sm:text-5xl">
-            Tu banco sin filas, <span className="text-green-sheen">sin contraseñas</span> y sin
-            agencias.
+          <h1 className="text-5xl font-extrabold leading-[1.03] tracking-tight sm:text-6xl">
+            Tu dinero,
+            <br />
+            <span className="text-cyan">a un vistazo.</span>
           </h1>
-          <p className="mt-5 max-w-lg text-lg text-opal">
-            Abre tu cuenta en minutos con tu DNI y una prueba de vida facial. Ingresa a la Banca por
-            Internet solo mostrando tu rostro.
+          <p className="mt-6 max-w-lg text-lg text-white/65">
+            Abre tu cuenta en minutos con tu DNI y una prueba de vida. Entra a la Banca por Internet
+            sin contraseñas: solo mírate.
           </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
             <ButtonLink to="/registro" size="lg" variant="primary">
               Abrir cuenta
             </ButtonLink>
-            <ButtonLink
-              to="/login"
-              size="lg"
-              variant="secondary"
-              className="border-opal text-opal hover:bg-opal hover:text-rich-black"
-            >
+            <ButtonLink to="/login" size="lg" variant="secondary">
               Banca por Internet
             </ButtonLink>
           </div>
-          <p className="mt-4 text-sm text-opal/80">
-            Identidad validada con RENIEC. Sin costo de apertura ni mantenimiento.
+          <p className="mt-5 text-sm text-white/40">
+            Identidad validada con RENIEC · Sin costo de apertura ni mantenimiento
           </p>
         </div>
-        <div className="mx-auto w-full max-w-sm">
-          <FaceScanArt />
+        <div className="mx-auto w-full max-w-md">
+          <CardArt />
         </div>
       </Container>
     </section>
   );
 }
 
+/* ------------------------------------------------------------------ */
+
+type Accion = {
+  titulo: string;
+  detalle: string;
+  to?: string;
+  pronto?: boolean;
+};
+
+const acciones: Accion[] = [
+  { titulo: "Abrir una cuenta", detalle: "Sin ir a una agencia, en minutos.", to: "/registro" },
+  { titulo: "Entrar a mi banca", detalle: "Ingresa con tu rostro.", to: "/login" },
+  { titulo: "Revisar mis movimientos", detalle: "Saldos y cuentas al día.", to: "/login" },
+  { titulo: "Transferir dinero", detalle: "A cualquier cuenta del país.", pronto: true },
+  { titulo: "Pagar servicios", detalle: "Luz, agua, internet y más.", pronto: true },
+  { titulo: "Pedir mi tarjeta", detalle: "Débito digital al instante.", pronto: true },
+];
+
+function QueNecesitasHoy() {
+  return (
+    <section id="hoy" className="bg-ink py-20 text-white sm:py-28">
+      <Container>
+        <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
+          ¿Qué necesitas hacer hoy?
+        </h2>
+        <p className="mt-3 max-w-2xl text-white/60">Entra directo a lo que viniste a hacer.</p>
+
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {acciones.map((a) => (
+            <AccionCard key={a.titulo} accion={a} />
+          ))}
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+function AccionCard({ accion }: { accion: Accion }) {
+  const inner = (
+    <>
+      <div className="flex items-start justify-between gap-3">
+        <h3 className="text-lg font-semibold text-white">{accion.titulo}</h3>
+        {accion.pronto ? (
+          <span className="shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-semibold text-white/50">
+            Pronto
+          </span>
+        ) : (
+          <span aria-hidden className="text-cyan transition group-hover:translate-x-0.5">
+            →
+          </span>
+        )}
+      </div>
+      <p className="mt-2 text-sm text-white/55">{accion.detalle}</p>
+    </>
+  );
+
+  const base = "group rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition";
+
+  if (accion.pronto || !accion.to) {
+    return <div className={`${base} opacity-60`}>{inner}</div>;
+  }
+  return (
+    <Link
+      to={accion.to}
+      className={`${base} hover:-translate-y-0.5 hover:border-cyan/50 hover:bg-white/[0.06]`}
+    >
+      {inner}
+    </Link>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+
 const features = [
   {
     title: "Sin agencias",
-    body: "Todo el proceso de apertura es en línea. Tu número de cuenta al terminar el registro.",
+    body: "Todo el proceso de apertura es en línea. Recibes tu número de cuenta al terminar el registro.",
   },
   {
     title: "Acceso con tu rostro",
-    body: "El login compara tu rostro en vivo con tu identidad. Método alterno con clave + código si lo necesitas.",
+    body: "El login compara tu rostro en vivo con tu identidad. Método alterno con clave + código cuando lo necesites.",
   },
   {
-    title: "Seguro por diseño",
-    body: "Nunca guardamos tus fotos: solo una huella matemática cifrada de tu rostro.",
+    title: "Tu foto no se guarda",
+    body: "Convertimos tu rostro en una huella numérica cifrada.",
   },
 ];
 
 function Producto() {
   return (
-    <section id="producto" className="py-16 sm:py-24">
+    <section id="producto" className="bg-charcoal py-20 text-white sm:py-28">
       <Container>
-        <h2 className="text-3xl font-bold text-rich-black">Una cuenta pensada para el celular</h2>
-        <p className="mt-3 max-w-2xl text-rich-black/70">
-          Luma Bank reemplaza el trámite presencial por un flujo digital verificado.
+        <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
+          Una cuenta pensada para la web
+        </h2>
+        <p className="mt-3 max-w-2xl text-white/60">
+          Luma Bank reemplaza el trámite presencial por un flujo digital verificado de punta a punta.
         </p>
-        <div className="mt-10 grid gap-6 sm:grid-cols-3">
+        <div className="mt-12 grid gap-10 sm:grid-cols-3">
           {features.map((f) => (
-            <div key={f.title} className="rounded-2xl border border-opal/60 bg-white p-6">
-              <div className="mb-4 h-10 w-10 rounded-xl bg-green-sheen/30" />
-              <h3 className="text-lg font-semibold text-rich-black">{f.title}</h3>
-              <p className="mt-2 text-sm text-rich-black/70">{f.body}</p>
+            <div key={f.title}>
+              <div className="mb-4 h-px w-12 bg-cyan" />
+              <h3 className="text-xl font-bold text-white">{f.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-white/60">{f.body}</p>
             </div>
           ))}
         </div>
@@ -91,6 +166,8 @@ function Producto() {
     </section>
   );
 }
+
+/* ------------------------------------------------------------------ */
 
 const steps = [
   {
@@ -112,15 +189,17 @@ const steps = [
 
 function ComoFunciona() {
   return (
-    <section id="como-funciona" className="bg-champagne py-16 sm:py-24">
+    <section id="como-funciona" className="bg-ink py-20 text-white sm:py-28">
       <Container>
-        <h2 className="text-3xl font-bold text-rich-black">Cómo funciona la apertura</h2>
-        <div className="mt-10 grid gap-6 sm:grid-cols-3">
+        <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
+          Cómo funciona la apertura
+        </h2>
+        <div className="mt-12 grid gap-6 sm:grid-cols-3">
           {steps.map((s) => (
-            <div key={s.n} className="rounded-2xl bg-white p-6 shadow-sm">
-              <span className="text-sm font-bold text-seaweed">{s.n}</span>
-              <h3 className="mt-2 text-lg font-semibold text-rich-black">{s.title}</h3>
-              <p className="mt-2 text-sm text-rich-black/70">{s.body}</p>
+            <div key={s.n} className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+              <span className="text-sm font-bold text-cyan">{s.n}</span>
+              <h3 className="mt-2 text-lg font-semibold text-white">{s.title}</h3>
+              <p className="mt-2 text-sm text-white/60">{s.body}</p>
             </div>
           ))}
         </div>
@@ -129,57 +208,24 @@ function ComoFunciona() {
   );
 }
 
-const securityPoints = [
-  "Guardamos un embedding facial, nunca la foto.",
-  "El embedding se cifra con AES-256 antes de almacenarse.",
-  "Se guarda en almacenamiento de objetos aislado (MinIO), fuera de la base de datos.",
-  "Segundo factor con código temporal (TOTP) para el método alterno.",
-  "Prácticas de autenticación alineadas a OWASP ASVS nivel 2.",
-];
-
-function Seguridad() {
-  return (
-    <section id="seguridad" className="py-16 sm:py-24">
-      <Container className="grid gap-10 lg:grid-cols-2 lg:items-center">
-        <div>
-          <h2 className="text-3xl font-bold text-rich-black">Tu rostro no se guarda como foto</h2>
-          <p className="mt-3 text-rich-black/70">
-            Convertimos tu rostro en una huella numérica irreversible. Aunque alguien accediera al
-            almacenamiento, no podría reconstruir tu imagen.
-          </p>
-        </div>
-        <ul className="space-y-3">
-          {securityPoints.map((p) => (
-            <li key={p} className="flex gap-3 rounded-xl border border-opal/60 bg-white p-4">
-              <span aria-hidden className="mt-0.5 text-green-sheen">
-                ✓
-              </span>
-              <span className="text-sm text-rich-black/80">{p}</span>
-            </li>
-          ))}
-        </ul>
-      </Container>
-    </section>
-  );
-}
+/* ------------------------------------------------------------------ */
 
 function CtaFinal() {
   return (
-    <section className="bg-seaweed text-white">
-      <Container className="flex flex-col items-center gap-6 py-14 text-center">
-        <h2 className="text-2xl font-bold sm:text-3xl">¿List@ para abrir tu cuenta?</h2>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <ButtonLink to="/registro" size="lg" variant="primary">
-            Abrir cuenta
-          </ButtonLink>
-          <ButtonLink
-            to="/login"
-            size="lg"
-            variant="secondary"
-            className="border-white text-white hover:bg-white hover:text-seaweed"
-          >
-            Ya tengo cuenta
-          </ButtonLink>
+    <section className="bg-charcoal">
+      <Container className="py-16 sm:py-24">
+        <div className="relative overflow-hidden rounded-3xl border border-cyan/20 bg-gradient-to-br from-cyan/15 to-transparent p-10 text-center sm:p-16">
+          <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+            Tu banco, listo en lo que dura un café.
+          </h2>
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+            <ButtonLink to="/registro" size="lg" variant="primary">
+              Abrir cuenta
+            </ButtonLink>
+            <ButtonLink to="/login" size="lg" variant="secondary">
+              Ya tengo cuenta
+            </ButtonLink>
+          </div>
         </div>
       </Container>
     </section>

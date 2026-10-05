@@ -33,7 +33,11 @@ export function LoginFacialStep({ identifier, onFallback, onLocked, onBack }: Pr
       setSending(false);
       setAttempts((n) => n + 1);
       if (err instanceof ApiError) {
-        const payload = err.payload as { fallback?: string; locked_until?: string } | null;
+        const payload = err.payload as {
+          fallback?: string;
+          locked_until?: string;
+          debug?: { distance: number; threshold: number };
+        } | null;
         if (err.status === 423) {
           onLocked(payload?.locked_until, err.message);
           return;
@@ -42,7 +46,10 @@ export function LoginFacialStep({ identifier, onFallback, onLocked, onBack }: Pr
           onFallback(err.message);
           return;
         }
-        setError(err.message);
+        const dbg = payload?.debug
+          ? ` (distancia ${payload.debug.distance} / umbral ${payload.debug.threshold})`
+          : "";
+        setError(err.message + dbg);
       } else {
         setError("No se pudo verificar tu rostro.");
       }
@@ -52,8 +59,8 @@ export function LoginFacialStep({ identifier, onFallback, onLocked, onBack }: Pr
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-2xl font-bold text-rich-black">Verifica tu rostro</h1>
-        <p className="mt-1 text-sm text-rich-black/60">
+        <h1 className="text-2xl font-bold text-white">Verifica tu rostro</h1>
+        <p className="mt-1 text-sm text-white/60">
           Parpadea y gira la cabeza. Comparamos con tu registro; tu foto no se guarda.
         </p>
       </div>
@@ -61,17 +68,17 @@ export function LoginFacialStep({ identifier, onFallback, onLocked, onBack }: Pr
       {/* key: al fallar, remonta la cámara para un intento limpio */}
       <FaceCapture key={attempts} onCaptured={onCaptured} disabled={sending} />
 
-      {sending && <p className="text-sm text-rich-black/60">Verificando…</p>}
+      {sending && <p className="text-sm text-white/60">Verificando…</p>}
       {error && <Alert tone="error">{error}</Alert>}
 
       <div className="flex gap-2">
-        <button type="button" onClick={onBack} className="text-sm text-seaweed underline">
+        <button type="button" onClick={onBack} className="text-sm text-cyan underline">
           ← Cambiar usuario
         </button>
         <button
           type="button"
           onClick={() => onFallback("¿Problemas con la cámara? Usa tu contraseña y código.")}
-          className="ml-auto text-sm text-seaweed underline"
+          className="ml-auto text-sm text-cyan underline"
         >
           Usar contraseña + código
         </button>

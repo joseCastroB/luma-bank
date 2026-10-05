@@ -6,8 +6,39 @@ facial** (basada en *embeddings* cifrados, nunca fotos) y prueba de vivacidad.
 Proyecto del **Curso Integrador II: Software (UTP)** — enfoque híbrido
 **PMBOK + Scrum**, 17 semanas, Sprint 0 + 8 sprints de 2 semanas.
 
-> **Estado:** Sprint 0 — *scaffolding*. La landing, el registro (KYC) y el login
-> facial llegan en el Sprint 1.
+> **Estado:** Sprint 1 completado — landing (HU01), registro/apertura de cuenta
+> con KYC (HU02) e inicio de sesión con reconocimiento facial (HU03).
+
+---
+
+## Funcionalidades (Sprint 1)
+
+### HU01 — Landing (`/`)
+Página pública con dos accesos: **Abrir cuenta** → `/registro`,
+**Banca por Internet** → `/login`.
+
+### HU02 — Registro y apertura de cuenta (`/registro`)
+Asistente de 5 pasos:
+1. **DNI** → `POST /api/v1/accounts/registro/validar-dni/` (trim + 8 dígitos,
+   RENIEC vía LionAPI con modos `production`/`mock`, caché por DNI en Valkey).
+2. **Confirmar identidad** ("¿eres tú?").
+3. **Datos**: correo, fecha de nacimiento (rechaza < 18), contraseña (≥ 12).
+4. **Prueba de vida**: cámara + parpadeo/giro de cabeza (MediaPipe) + descriptor
+   facial de 128d (face-api) **en el navegador**. La foto no se envía.
+5. `POST /api/v1/accounts/registro/` → cifra el descriptor (AES-256-GCM), lo sube
+   a MinIO, crea el cliente y su cuenta, y devuelve el número + QR TOTP.
+
+### HU03 — Login (`/login`)
+1. Correo o DNI.
+2. Rostro en vivo → `POST /api/v1/accounts/login/facial/` (compara contra el
+   *embedding* almacenado). Éxito → JWT y `/app`.
+   - 2 fallos faciales → se ofrece el método alterno.
+   - 5 fallos consecutivos → cuenta bloqueada 30 min (HTTP 423).
+   - Prueba de vida fallida → intento registrado como sospechoso.
+3. Método alterno: correo + contraseña + código TOTP →
+   `POST /api/v1/accounts/login/password/`.
+
+Área privada `/app` (`GET /api/v1/accounts/me/`, requiere JWT): perfil + cuentas.
 
 ---
 

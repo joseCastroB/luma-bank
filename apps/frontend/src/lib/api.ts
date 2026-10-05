@@ -44,11 +44,27 @@ async function request<T>(
   const res = await fetch(`${API_URL}${path}`, {
     method,
     headers,
-    credentials: "include",
+    // El SPA se autentica con JWT en el header Authorization, nunca con cookies.
+    // Así una sesión del admin de Django abierta en el mismo navegador no
+    // "contamina" las peticiones de la API (evita fallos de CSRF).
+    credentials: "omit",
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   const text = await res.text();
-  const data = text ? JSON.parse(text) : null;
+  let data: unknown = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    // respuesta no-JSON (p. ej. traceback HTML de un 500)
+    if (!res.ok) {
+      throw new ApiError(res.status, {
+        detail:
+          res.status >= 500
+            ? "El servidor tuvo un error. Revisa los logs del backend."
+            : `Error ${res.status}`,
+      });
+    }
+  }
   if (!res.ok) throw new ApiError(res.status, data);
   return data as T;
 }

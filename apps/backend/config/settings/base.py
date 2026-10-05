@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "apps.accounts",
     "apps.banking",
     "apps.cards",
+    "apps.loans",
 ]
 
 MIDDLEWARE = [
@@ -143,9 +144,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Django REST Framework
 # ---------------------------------------------------------------------------
 REST_FRAMEWORK = {
+    # Solo JWT: la API no usa autenticación por sesión/cookie (evita que una
+    # sesión del admin abierta en el mismo navegador dispare CSRF en la API).
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
@@ -177,11 +179,15 @@ SIMPLE_JWT = {
 }
 
 # ---------------------------------------------------------------------------
-# CORS
+# CORS / CSRF
 # ---------------------------------------------------------------------------
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:5173")
 CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[FRONTEND_URL])
 CORS_ALLOW_CREDENTIALS = True
+
+# Django 4+ verifica el header Origin en peticiones POST con cookie de sesión.
+# El SPA vive en FRONTEND_URL, así que ese origen debe ser de confianza.
+CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[FRONTEND_URL])
 
 # ===========================================================================
 # Configuracion de dominio - Luma Bank

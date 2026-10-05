@@ -9,15 +9,17 @@ export function Stepper({ steps, current }: { steps: string[]; current: number }
               className={
                 "flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold " +
                 (state === "done"
-                  ? "bg-seaweed text-white"
+                  ? "bg-cyan/25 text-cyan"
                   : state === "active"
-                    ? "bg-green-sheen text-rich-black"
-                    : "bg-opal/40 text-rich-black/50")
+                    ? "bg-cyan text-ink"
+                    : "bg-white/10 text-white/40")
               }
             >
               {state === "done" ? "✓" : i + 1}
             </span>
-            <span className="hidden text-[11px] text-rich-black/60 sm:block">{label}</span>
+            <span className="hidden text-center text-[11px] leading-tight text-white/50 sm:block">
+              {label}
+            </span>
           </li>
         );
       })}

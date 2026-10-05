@@ -51,6 +51,7 @@ export function FaceCapture({ onCaptured, disabled }: Props) {
     if (camState !== "ready" || captured || disabled) return;
     let raf = 0;
     let stop = false;
+    let passedSince = 0;
     const detector = detectorRef.current;
 
     const tick = async () => {
@@ -64,8 +65,14 @@ export function FaceCapture({ onCaptured, disabled }: Props) {
         if (stop) return;
         setLive(result);
         if (result.passed) {
-          await capture();
-          return;
+          if (!passedSince) passedSince = performance.now();
+          // Capturar solo con el rostro de frente y ojos abiertos; tras 6 s
+          // se captura igual para no dejar al usuario atascado.
+          const timedOut = performance.now() - passedSince > 6000;
+          if ((result.frontal && result.eyesOpen) || timedOut) {
+            await capture();
+            return;
+          }
         }
       } catch {
         setModelError(true);
@@ -88,9 +95,9 @@ export function FaceCapture({ onCaptured, disabled }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative overflow-hidden rounded-xl bg-rich-black">
+      <div className="relative overflow-hidden rounded-xl bg-charcoal">
         <video ref={videoRef} playsInline muted className="aspect-[4/3] w-full -scale-x-100 object-cover" />
-        <div className="absolute inset-x-0 bottom-0 bg-black/50 p-2 text-center text-xs text-champagne">
+        <div className="absolute inset-x-0 bottom-0 bg-black/50 p-2 text-center text-xs text-white">
           {captured
             ? "Rostro capturado ✓"
             : camState === "denied" || camState === "error"
@@ -101,7 +108,7 @@ export function FaceCapture({ onCaptured, disabled }: Props) {
         </div>
       </div>
 
-      <div className="flex gap-2 text-xs">
+      <div className="flex justify-center gap-2 text-xs">
         <Badge on={captured || live?.checks.includes("blink")}>Parpadeo</Badge>
         <Badge on={captured || live?.checks.includes("head_turn")}>Giro de cabeza</Badge>
       </div>
@@ -114,7 +121,7 @@ export function FaceCapture({ onCaptured, disabled }: Props) {
       {error && <Alert tone="error">{error}</Alert>}
 
       {import.meta.env.DEV && !captured && (
-        <button type="button" onClick={simulate} className="self-start text-xs text-rich-black/50 underline">
+        <button type="button" onClick={simulate} className="self-start text-xs text-white/50 underline">
           Simular prueba de vida (solo desarrollo)
         </button>
       )}
@@ -127,7 +134,7 @@ function Badge({ on, children }: { on?: boolean; children: React.ReactNode }) {
     <span
       className={
         "rounded-full px-2 py-1 " +
-        (on ? "bg-green-sheen/30 text-rich-black" : "bg-opal/30 text-rich-black/50")
+        (on ? "bg-cyan/20 text-white" : "bg-white/10 text-white/40")
       }
     >
       {on ? "✓ " : ""}
