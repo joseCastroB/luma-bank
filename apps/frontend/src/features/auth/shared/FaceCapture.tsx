@@ -1,25 +1,33 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert } from "@/components/ui/Alert";
 import { DESCRIPTOR_ALGORITHM, extractDescriptor, loadFaceModels } from "./face";
-import { createLivenessDetector, type LivenessState } from "./liveness";
+import { createLivenessDetector, describePlan, type LivenessState } from "./liveness";
 import { useCamera } from "./useCamera";
+import type { LivenessAction, LivenessResult } from "@/lib/api";
 
 export { DESCRIPTOR_ALGORITHM };
 
 interface Props {
-  /** Se llama con el descriptor de 128d cuando se supera la prueba de vida. */
-  onCaptured: (descriptor: number[]) => void;
+  /** Plan que el servidor sorteó para este intento. */
+  plan: LivenessAction[];
+  challengeId: string;
+  /** Se llama con el descriptor y la respuesta al reto, ya consumida por el cliente. */
+  onCaptured: (descriptor: number[], liveness: LivenessResult) => void;
   /** Deshabilita la captura (p. ej. mientras se envía al backend). */
   disabled?: boolean;
 }
 
 /**
- * Cámara + prueba de vida (MediaPipe) + extracción del descriptor (face-api).
+ * Cámara + reto de vida (MediaPipe) + extracción del descriptor (face-api).
  * Reutilizado por el registro (HU02) y el login (HU03).
+ *
+ * El plan NO se elige aqui: viene del servidor. Este componente solo ejecuta
+ * los gestos que le pidan y devuelve la lista de los completados, en orden.
  */
-export function FaceCapture({ onCaptured, disabled }: Props) {
+export function FaceCapture({ plan, challengeId, onCaptured, disabled }: Props) {
   const { videoRef, state: camState, message: camMessage } = useCamera(true);
-  const detectorRef = useRef(createLivenessDetector());
+  // El detector nace ligado a un plan. Cambiar el reto implica uno nuevo.
+  const detectorRef = useRef(createLivenessDetector(plan));
   const [live, setLive] = useState<LivenessState | null>(null);
   const [captured, setCaptured] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,23 +37,26 @@ export function FaceCapture({ onCaptured, disabled }: Props) {
     loadFaceModels().catch(() => setModelError(true));
   }, []);
 
-  const capture = useCallback(async () => {
-    const video = videoRef.current;
-    if (!video) return;
-    try {
-      const res = await extractDescriptor(video);
-      if (!res) {
-        setError("No pudimos leer tu rostro con claridad. Acomódate y vuelve a intentar.");
-        detectorRef.current.reset();
-        setLive(null);
-        return;
+  const capture = useCallback(
+    async (completed: LivenessAction[]) => {
+      const video = videoRef.current;
+      if (!video) return;
+      try {
+        const res = await extractDescriptor(video);
+        if (!res) {
+          setError("No pudimos leer tu rostro con claridad. Acomódate y vuelve a intentar.");
+          detectorRef.current.reset();
+          setLive(null);
+          return;
+        }
+        setCaptured(true);
+        onCaptured(res.descriptor, { challenge_id: challengeId, completed_actions: completed });
+      } catch {
+        setModelError(true);
       }
-      setCaptured(true);
-      onCaptured(res.descriptor);
-    } catch {
-      setModelError(true);
-    }
-  }, [onCaptured, videoRef]);
+    },
+    [onCaptured, challengeId, videoRef],
+  );
 
   useEffect(() => {
     if (camState !== "ready" || captured || disabled) return;
@@ -63,8 +74,8 @@ export function FaceCapture({ onCaptured, disabled }: Props) {
         const result = await detector.process(video, performance.now());
         if (stop) return;
         setLive(result);
-        if (result.passed) {
-          await capture();
+        if (result.finished) {
+          await capture(result.completed);
           return;
         }
       } catch {
@@ -81,9 +92,12 @@ export function FaceCapture({ onCaptured, disabled }: Props) {
   }, [camState, captured, disabled, capture, videoRef]);
 
   function simulate() {
+    // Solo desarrollo: cumple el reto sin cámara. El backend no puede distinguir
+    // esto de una ejecución real, así que este botón NUNCA debe existir fuera de
+    // DEV (Vite lo elimina del bundle de producción).
     const fake = Array.from({ length: 128 }, (_, i) => Math.sin(i * 0.3) * 0.5);
     setCaptured(true);
-    onCaptured(fake);
+    onCaptured(fake, { challenge_id: challengeId, completed_actions: [...plan] });
   }
 
   return (
@@ -101,9 +115,27 @@ export function FaceCapture({ onCaptured, disabled }: Props) {
         </div>
       </div>
 
-      <div className="flex gap-2 text-xs">
-        <Badge on={captured || live?.checks.includes("blink")}>Parpadeo</Badge>
-        <Badge on={captured || live?.checks.includes("head_turn")}>Giro de cabeza</Badge>
+      <div className="flex flex-wrap gap-2 text-xs">
+        {plan.map((action, i) => {
+          const done = (live?.completed.length ?? 0) > i || captured;
+          const active = !done && live?.currentIndex === i;
+          return (
+            <span
+              key={action}
+              className={
+                "rounded-full px-2 py-1 " +
+                (done
+                  ? "bg-green-sheen/30 text-rich-black"
+                  : active
+                    ? "bg-champagne/40 text-rich-black"
+                    : "bg-opal/30 text-rich-black/50")
+              }
+            >
+              {done ? "✓ " : ""}
+              {describePlan([action])}
+            </span>
+          );
+        })}
       </div>
 
       {modelError && (
@@ -119,19 +151,5 @@ export function FaceCapture({ onCaptured, disabled }: Props) {
         </button>
       )}
     </div>
-  );
-}
-
-function Badge({ on, children }: { on?: boolean; children: React.ReactNode }) {
-  return (
-    <span
-      className={
-        "rounded-full px-2 py-1 " +
-        (on ? "bg-green-sheen/30 text-rich-black" : "bg-opal/30 text-rich-black/50")
-      }
-    >
-      {on ? "✓ " : ""}
-      {children}
-    </span>
   );
 }

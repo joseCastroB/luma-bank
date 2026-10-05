@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useState } from "react";
 import { Stepper } from "@/components/ui/Stepper";
-import type { DniValidation, RegistroResponse } from "@/lib/api";
+import type { DniValidation, LivenessResult, RegistroResponse } from "@/lib/api";
 import { StepConfirmar } from "./steps/StepConfirmar";
 import { StepDatos } from "./steps/StepDatos";
 import { StepDni } from "./steps/StepDni";
@@ -14,11 +14,17 @@ const StepRostro = lazy(() =>
 
 export interface WizardData {
   dni: string;
+  /** Datos oficiales de RENIEC. null cuando el registro va degradado (RNF-06). */
   identity: DniValidation | null;
+  /** true = LionAPI no tiene créditos; se registra sin validar identidad. */
+  identityPendingReview: boolean;
+  /** Nombre declarado por el usuario; obligatorio solo en registro degradado. */
+  declaredFullName: string;
   email: string;
   birthDate: string;
   password: string;
-  liveness: { passed: boolean; checks: string[] } | null;
+  /** Respuesta al reto de vida emitido por el servidor (no un `passed` del cliente). */
+  liveness: LivenessResult | null;
   descriptor: number[] | null;
   descriptorAlgorithm: string;
 }
@@ -26,6 +32,8 @@ export interface WizardData {
 const EMPTY: WizardData = {
   dni: "",
   identity: null,
+  identityPendingReview: false,
+  declaredFullName: "",
   email: "",
   birthDate: "",
   password: "",
@@ -58,7 +66,7 @@ export function RegistroWizard() {
       <Stepper steps={STEP_LABELS} current={step} />
 
       {step === 0 && <StepDni data={data} update={update} next={next} />}
-      {step === 1 && <StepConfirmar data={data} next={next} back={back} />}
+      {step === 1 && <StepConfirmar data={data} update={update} next={next} back={back} />}
       {step === 2 && <StepDatos data={data} update={update} next={next} back={back} />}
       {step === 3 && (
         <Suspense fallback={<p className="text-sm text-rich-black/60">Cargando cámara…</p>}>

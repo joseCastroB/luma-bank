@@ -11,9 +11,9 @@ from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import LoginAttempt
+from .models import LivenessAttestation, LoginAttempt
 from .serializers import FacialLoginSerializer, PasswordLoginSerializer
-from .services import auth
+from .services import auth, liveness
 
 logger = logging.getLogger("luma.auth")
 
@@ -81,8 +81,16 @@ class FacialLoginView(APIView):
         if auth.is_locked(user):
             return _locked_response(user, identifier, method, meta)
 
-        if not v["liveness"]["passed"]:
-            locked = auth._register_failure(user, facial=True)
+        # El reto de vida se consume una sola vez: si falla, el cliente tiene
+        # que pedir uno nuevo y volver a capturar. Se valida antes de comparar
+        # el rostro para no gastar un intento facial del usuario por un reto
+        # manipulado.
+        try:
+            attestation = liveness.consume_challenge(
+                v["liveness"]["challenge_id"],
+                v["liveness"]["completed_actions"],
+            )
+        except liveness.LivenessError as exc:
             _log(
                 identifier,
                 method,
@@ -91,11 +99,9 @@ class FacialLoginView(APIView):
                 suspicious=True,
                 meta=meta,
             )
-            if locked:
-                return _locked_response(user, identifier, method, meta)
             return Response(
-                {"detail": "No se completó la prueba de vida. El intento quedó registrado."},
-                status=status.HTTP_400_BAD_REQUEST,
+                {"detail": exc.message, "code": exc.code},
+                status=exc.status,
             )
 
         try:
@@ -105,6 +111,16 @@ class FacialLoginView(APIView):
 
         if check.matched:
             auth.reset_failures(user)
+            ref = getattr(user, "face_embedding", None)
+            LivenessAttestation.objects.create(
+                user=user,
+                context=LivenessAttestation.Context.LOGIN,
+                challenge_id=attestation.challenge_id,
+                plan=attestation.plan,
+                completed_actions=attestation.completed_actions,
+                duration_ms=attestation.duration_ms,
+                descriptor_algorithm=ref.algorithm if ref else "",
+            )
             _log(identifier, method, LoginAttempt.Outcome.SUCCESS, user=user, meta=meta)
             return Response({**_tokens(user), "user": _user_public(user)})
 

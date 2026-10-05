@@ -86,6 +86,25 @@ class FaceEmbedding(models.Model):
         help_text="Modelo/versión que generó el vector, p. ej. 'face-api ssdMobilenetv1 128d'.",
     )
     dimensions = models.PositiveIntegerField()
+
+    # Huella HMAC del descriptor. Permite detectar en O(1) que dos usuarios
+    # registering el MISMO vector robado (replay de una captura ajena) con un
+    # indice unico, sin descifrar y comparar todos los embeddings de MinIO.
+    # No es reversible hacia el vector: es un HMAC con clave del servidor.
+    #
+    # null=True a proposito: las filas creadas antes de esta migracion quedan
+    # sin huella. No se pueden rellenar en una migracion porque el HMAC
+    # necesita FACE_EMBEDDING_ENCRYPTION_KEY y descifrar MinIO desde una
+    # migracion seria una operacion de aplicacion, no de esquema.
+    descriptor_fingerprint = models.CharField(
+        max_length=64,
+        unique=True,
+        null=True,
+        blank=True,
+        editable=False,
+        help_text="HMAC-SHA256 del descriptor; detecta replay de una captura ajena.",
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -96,6 +115,42 @@ class FaceEmbedding(models.Model):
 
     def __str__(self) -> str:
         return f"FaceEmbedding<{self.user_id}> {self.object_key}"
+
+
+class LivenessAttestation(models.Model):
+    """
+    Evidencia persistente de que un reto de vida se supero (RNF-15, RNF-16).
+
+    El reto en si vive en Valkey (efimero, un solo uso). Esto guarda el
+    resultado para poder auditar que una cuenta se abrio con prueba de vida
+    verificada por el servidor, y no solo por una asercion del navegador.
+    """
+
+    class Context(models.TextChoices):
+        REGISTRO = "registro", "registro / apertura de cuenta"
+        LOGIN = "login", "inicio de sesión facial"
+
+    user = models.ForeignKey(
+        "accounts.User",
+        on_delete=models.CASCADE,
+        related_name="liveness_attestations",
+    )
+    context = models.CharField(max_length=16, choices=Context.choices)
+    challenge_id = models.CharField(max_length=64, unique=True)
+    plan = models.JSONField(help_text="Reto sorteado por el servidor.")
+    completed_actions = models.JSONField(help_text="Gestos ejecutados, en orden.")
+    duration_ms = models.PositiveIntegerField(help_text="Tiempo entre emisión y respuesta.")
+    descriptor_algorithm = models.CharField(max_length=128, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "accounts_liveness_attestation"
+        verbose_name = "atestación de vida"
+        verbose_name_plural = "atestaciones de vida"
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"LivenessAttestation<{self.user_id}> {self.context} {self.challenge_id}"
 
 
 class LoginAttempt(models.Model):

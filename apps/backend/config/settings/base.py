@@ -161,6 +161,9 @@ REST_FRAMEWORK = {
         "dni_validation": "15/min",
         "registro": "5/min",
         "login": "10/min",
+        # Emitir retos de vida es barato pero ilimitado permitiria enumerar
+        # o(genuinos) IDs de reto; se limita igual que el login.
+        "liveness_challenge": "20/min",
     },
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
@@ -210,6 +213,15 @@ LIONAPI_CACHE_TTL_SECONDS = env.int("LIONAPI_CACHE_TTL_SECONDS", default=60 * 60
 # El login compara el rostro en vivo contra el EMBEDDING almacenado.
 # Umbral de distancia: menor = mas estricto. Depende del modelo usado.
 FACE_MATCH_THRESHOLD = env.float("FACE_MATCH_THRESHOLD", default=0.6)
+
+# --- Prueba de vida (RNF-15, anti-spoofing) ------------------------------
+# El reto (que gestos y en que orden) lo sortea el SERVIDOR y es de un solo
+# uso, guardado en Valkey. Asi un video grabado no sirve para siempre.
+LIVENESS_PLAN_SIZE = env.int("LIVENESS_PLAN_SIZE", default=2)
+LIVENESS_CHALLENGE_TTL_SECONDS = env.int("LIVENESS_CHALLENGE_TTL_SECONDS", default=180)
+# Piso de duracion por gesto: una respuesta instantanea delata un cliente que
+# no evaluo cuadro a cuadro.
+LIVENESS_MIN_ACTION_MS = env.int("LIVENESS_MIN_ACTION_MS", default=600)
 
 # --- Almacenamiento de embeddings faciales (MinIO / S3) ------------------
 # El embedding se cifra (AES-256) y se guarda en MinIO. En PostgreSQL solo

@@ -59,11 +59,40 @@ def resolve_user(identifier: str):
 
 
 def is_locked(user) -> bool:
-    return bool(user.locked_until and user.locked_until > timezone.now())
+    """
+    True si la cuenta está bloqueada en este momento.
+
+    Al expirar el bloqueo también pone los contadores en cero. Sin esto, un
+    cliente que llegó al límite sigue con failed_login_attempts=5 para siempre
+    (solo se reseteaban al iniciar sesión con éxito), así que un solo fallo
+    posterior al vencimiento lo vuelve a bloquear al instante y la cuenta
+    queda impracticable sin intervención.
+    """
+    if not user.locked_until:
+        return False
+    if user.locked_until > timezone.now():
+        return True
+    clear_expired_lock(user)
+    return False
+
+
+def clear_expired_lock(user) -> None:
+    """Libera un bloqueo ya vencido: cuenta habilitada y contadores en cero."""
+    User.objects.filter(pk=user.pk).update(
+        failed_login_attempts=0, failed_facial_attempts=0, locked_until=None
+    )
+    user.failed_login_attempts = 0
+    user.failed_facial_attempts = 0
+    user.locked_until = None
+    logger.info("Bloqueo expirado, contadores reiniciados: user=%s", user.pk)
 
 
 def _register_failure(user, *, facial: bool) -> bool:
     """Suma el fallo. Devuelve True si con esto la cuenta quedó bloqueada."""
+    # Si el bloqueo anterior ya venció, se empieza de cero (ver is_locked).
+    if user.locked_until and user.locked_until <= timezone.now():
+        clear_expired_lock(user)
+
     user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
     if facial:
         user.failed_facial_attempts = (user.failed_facial_attempts or 0) + 1

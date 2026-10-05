@@ -10,6 +10,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
+from .services import liveness
 from .services.identity import InvalidDni, normalize_dni
 
 User = get_user_model()
@@ -37,8 +38,27 @@ class DniValidationSerializer(serializers.Serializer):
 
 
 class LivenessSerializer(serializers.Serializer):
-    passed = serializers.BooleanField()
-    checks = serializers.ListField(child=serializers.CharField(), required=False, default=list)
+    """
+    Respuesta del cliente al reto de vida emitido por el servidor.
+
+    El cliente ya no declara `passed`: eso era una asercion del navegador que
+    cualquiera podia mandar por curl. Ahora declara QUE GESTOS ejecuto y el
+    servidor decide si la secuencia es la que sorteo (services/liveness.py).
+    """
+
+    challenge_id = serializers.CharField(max_length=64)
+    completed_actions = serializers.ListField(
+        child=serializers.ChoiceField(choices=liveness.ACTIONS),
+        allow_empty=False,
+        help_text="Gestos ejecutados, en el orden en que se completaron.",
+    )
+
+    def validate_completed_actions(self, value: list[str]) -> list[str]:
+        if len(set(value)) != len(value):
+            raise serializers.ValidationError(
+                "Un gesto no puede completarse dos veces en el mismo reto."
+            )
+        return value
 
 
 class RegistroSerializer(serializers.Serializer):
@@ -54,6 +74,18 @@ class RegistroSerializer(serializers.Serializer):
         default="face-api ssdMobilenetv1 128d",
         max_length=128,
     )
+    # Solo se usa en registro degradado (RNF-06), cuando RENIEC no devolvio el
+    # nombre oficial. Opcional en el payload normal porque ahí manda LionAPI.
+    full_name = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        max_length=300,
+    )
+
+    def validate_full_name(self, value: str) -> str:
+        if value and not value.strip():
+            raise serializers.ValidationError("El nombre no puede quedar vacío.")
+        return value.strip()
 
     def validate_identity_confirmed(self, value: bool) -> bool:
         if not value:
@@ -79,11 +111,6 @@ class RegistroSerializer(serializers.Serializer):
 
     def validate_password(self, value: str) -> str:
         validate_password(value)
-        return value
-
-    def validate_liveness(self, value: dict) -> dict:
-        if not value.get("passed"):
-            raise serializers.ValidationError("No se completó la prueba de vida.")
         return value
 
     def validate_face_descriptor(self, value: list[float]) -> list[float]:

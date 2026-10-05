@@ -41,6 +41,17 @@ class IdentityServiceError(IdentityError):
     """LionAPI no está disponible o respondió con error."""
 
 
+class LionApiQuotaExceeded(IdentityServiceError):
+    """
+    Se agotaron los créditos/consultas de LionAPI (HTTP 429).
+
+    Va separada de IdentityServiceError porque RNF-06 pide degradación con
+    gracia: el agotamiento de créditos es un estado CONOCIDO y esperable, no
+    una caída del servicio. Permite distinguir "no hay consultas" de "la API
+    está caída" y aplicar una respuesta degradada en vez de un error genérico.
+    """
+
+
 @dataclass(frozen=True)
 class DniData:
     dni: str
@@ -103,18 +114,45 @@ def validate_dni(raw: str) -> DniData:
 
 
 def _lionapi_lookup(dni: str) -> DniData:
+    """
+    Consulta real a LionAPI (Software Lion).
+
+    Contrato verificado contra la API en produccion:
+
+        GET {LIONAPI_BASE_URL}/consulta-dni/{dni}
+        Header: x-api-key: <LIONAPI_KEY>
+
+    La API responde SIEMPRE con HTTP 200 y envuelve el resultado, así que el
+    status HTTP NO alcanza para saber si fue un acierto:
+
+        exito      -> {"success": true, "message": "exito", "result": {...}}
+        no existe  -> {"success": false, "message": "DNI no encontrado", "result": null}
+        sin key    -> HTTP 401, {"success": false, "message": "Falta la API Key ..."}
+        fallo      -> {"success": false, "message": "<texto>", "result": null}
+    """
     if not settings.LIONAPI_KEY:
         raise IdentityServiceError("LIONAPI_KEY no está configurada.")
 
     url = f"{settings.LIONAPI_BASE_URL.rstrip('/')}/consulta-dni/{dni}"
     try:
-        resp = requests.get(url, headers={"x-api-key": settings.LIONAPI_KEY}, timeout=10)
+        resp = requests.get(
+            url,
+            headers={"x-api-key": settings.LIONAPI_KEY, "Accept": "application/json"},
+            timeout=10,
+        )
     except requests.RequestException as exc:
         logger.warning("LionAPI no responde: %s", exc)
         raise IdentityServiceError("El servicio de validación de identidad no responde.") from exc
 
-    if resp.status_code == 404:
-        raise IdentityNotFound("No se encontró una persona con ese DNI.")
+    if resp.status_code == 401:
+        # Credencial invalida o ausente. Es un problema de despliegue, no del DNI.
+        logger.error("LionAPI 401: API Key invalida o ausente.")
+        raise IdentityServiceError("El servicio de validación de identidad no está disponible.")
+    if resp.status_code == 429:
+        # RNF-06: agotamiento de creditos. Se distingue del fallo generico para
+        # poder aplicar la degradacion con gracia correspondiente.
+        logger.warning("LionAPI 429: creditos agotados.")
+        raise LionApiQuotaExceeded("Se agotaron las consultas disponibles al servicio.")
     if resp.status_code >= 400:
         logger.warning("LionAPI %s: %s", resp.status_code, resp.text[:300])
         raise IdentityServiceError("El servicio de validación de identidad falló.")
@@ -128,8 +166,23 @@ def _lionapi_lookup(dni: str) -> DniData:
 
 
 def _parse_lionapi(dni: str, payload: dict) -> DniData:
-    """Extrae nombres/apellidos con tolerancia a variantes de la respuesta."""
-    data = payload.get("data") or payload.get("result") or payload
+    """
+    Interpreta el sobre de LionAPI.
+
+    El campo `success` es el que manda: la API devuelve HTTP 200 incluso cuando
+    el DNI no existe o cuando el服务端 falla, así que leer solo el status HTTP
+    haría que un "DNI no encontrado" pasara por un acierto.
+    """
+    success = payload.get("success")
+    message = str(payload.get("message") or "").strip()
+    data = payload.get("result") or payload.get("data") or {}
+
+    if success is False or (success is None and message and not data):
+        # Distinguir "no existe esa persona" de "el servicio falló": es la
+        # diferencia entre un 400 honesto al usuario y un 502 con reintento.
+        if _is_not_found(message):
+            raise IdentityNotFound("No se encontró una persona con ese DNI.")
+        raise IdentityServiceError("El servicio de validación de identidad falló.")
 
     def pick(*keys: str) -> str:
         for k in keys:
@@ -138,24 +191,27 @@ def _parse_lionapi(dni: str, payload: dict) -> DniData:
                 return str(v).strip()
         return ""
 
+    # Claves confirmadas contra la API real: nombres, paterno, materno.
     nombres = pick("nombres", "names", "first_name", "nombre")
-    ap_paterno = pick(
-        "apellido_paterno", "apellidoPaterno", "ape_paterno", "paternal_surname", "paterno"
-    )
-    ap_materno = pick(
-        "apellido_materno", "apellidoMaterno", "ape_materno", "maternal_surname", "materno"
-    )
+    ap_paterno = pick("paterno", "apellido_paterno", "apellidoPaterno", "ape_paterno")
+    ap_materno = pick("materno", "apellido_materno", "apellidoMaterno", "ape_materno")
 
     if not nombres and not ap_paterno:
         raise IdentityNotFound("No se encontró una persona con ese DNI.")
 
     return DniData(
-        dni=dni,
+        dni=str(data.get("dni") or dni).strip(),
         nombres=nombres,
         apellido_paterno=ap_paterno,
         apellido_materno=ap_materno,
         source="lionapi",
     )
+
+
+def _is_not_found(message: str) -> bool:
+    """Distingue 'ese DNI no existe' de 'la API falló'."""
+    m = message.lower()
+    return "no encontrado" in m or "no existe" in m or "no fue encontrado" in m
 
 
 _MOCK_NOMBRES = ["Juan", "María", "Carlos", "Lucía", "José", "Ana", "Miguel", "Rosa"]

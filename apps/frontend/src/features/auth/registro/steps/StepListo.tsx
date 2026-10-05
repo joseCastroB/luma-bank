@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Alert } from "@/components/ui/Alert";
 import { ButtonLink } from "@/components/ui/Button";
 import type { RegistroResponse } from "@/lib/api";
 
@@ -19,6 +20,15 @@ export function StepListo({ result }: { result: RegistroResponse }) {
         <h2 className="text-xl font-bold text-rich-black">¡Cuenta creada!</h2>
         <p className="mt-1 text-sm text-rich-black/70">Bienvenid@, {result.full_name}.</p>
       </div>
+
+      {result.identity_pending_review && (
+        <Alert tone="warning">
+          Tu cuenta quedó creada, pero <strong>no pudimos validar tu DNI con el registro oficial</strong>{" "}
+          porque el servicio de consulta alcanzó su límite de solicitudes por hoy. Tu identidad
+          quedó pendiente de revisión manual: te avisaremos cuando esté confirmada. Guarda tu
+          número de cuenta y escríbenos por soporte.
+        </Alert>
+      )}
 
       <div className="rounded-xl bg-champagne p-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-seaweed">

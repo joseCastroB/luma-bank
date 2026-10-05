@@ -70,10 +70,17 @@ class TestValidateDniProduction:
 
     @responses.activate
     def test_not_found_raises(self, settings):
+        # LionAPI NO usa 404 para "no existe": responde HTTP 200 con
+        # success=false. Este test refleja el sobre real, no una suposicion.
         settings.DNI_VALIDATION_MODE = "production"
         settings.LIONAPI_KEY = "k"
         settings.LIONAPI_BASE_URL = "https://api.test/v1"
-        responses.add(responses.GET, "https://api.test/v1/consulta-dni/99999999", status=404)
+        responses.add(
+            responses.GET,
+            "https://api.test/v1/consulta-dni/99999999",
+            json={"success": False, "message": "DNI no encontrado", "result": None},
+            status=200,
+        )
         with pytest.raises(IdentityNotFound):
             validate_dni("99999999")
 
