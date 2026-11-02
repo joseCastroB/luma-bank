@@ -40,6 +40,32 @@ Asistente de 5 pasos:
 
 Área privada `/app` (`GET /api/v1/accounts/me/`, requiere JWT): perfil + cuentas.
 
+### Banca (`/app`, API en `/api/v1/banking/`, requiere JWT)
+
+Los números de HU son los del backlog (`Historias_de_Usuario_LumaBankv2`).
+
+| HU | Función | Endpoint |
+|----|---------|----------|
+| HU07 | Abrir cuenta de ahorro (PEN/USD) | `POST accounts/` |
+| HU08 | Saldo disponible y contable, TREA con vigencia | `GET accounts/`, `GET accounts/<numero>/` |
+| HU09 | Historial con rango de fechas y paginación | `GET accounts/<numero>/transactions/` |
+| HU10 | Transferencia entre cuentas propias | `POST transfers/own/` |
+| HU13 | Transferencia a terceros por CCI (TOTP sobre el umbral) | `POST transfers/third-party/` |
+| HU13 | Comprobante en PDF | `GET transactions/<codigo>/receipt/` |
+| HU14 | Conversión al tipo de cambio de SUNAT | `GET exchange/quote/`, `POST exchange/` |
+
+- **HU11, inactividad:** el frontend avisa a los 4:30 min y cierra a los 5 min; el
+  JWT dura 5 min y se renueva solo con actividad (refresh de 10 min).
+- **Intereses:** `python manage.py devengar_intereses` devenga a diario y capitaliza
+  a fin de mes. El servicio `scheduler` de Docker Compose lo corre cada hora; correrlo
+  varias veces no duplica intereses. Fuera de Compose, prográmalo como tarea periódica.
+- **TREA y tipo de cambio:** se publican en las tablas `tasa_ahorro` y `tipo_cambio`
+  (desde el admin). El tipo de cambio se consulta solo a SUNAT y, si falla, se usa la
+  última publicación de los últimos 5 días.
+- **Saldo de prueba:** `python manage.py depositar <numero> <monto>` (solo con DEBUG).
+- Las transferencias a otros bancos se simulan: se debitan al instante, sin conexión
+  real con una cámara de compensación.
+
 ---
 
 ## Stack
