@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from django.core.exceptions import ValidationError
-from django.core.validators import validate_ipv46_address
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -13,35 +11,14 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
-from apps.accounts.models import AuditLog
+from apps.accounts.services import audit
 
 from . import exchange_rates, receipts, serializers, services
 from .models import Account, Transaction
 
 
-def _client_ip(request) -> str | None:
-    forwarded = request.META.get("HTTP_X_FORWARDED_FOR", "")
-    ip = forwarded.split(",")[0].strip() if forwarded else request.META.get("REMOTE_ADDR")
-    try:
-        validate_ipv46_address(ip)
-    except ValidationError:
-        return None
-    return ip
-
-
-def _audit(request, action: str, *, entity: str, entity_id: str, **metadata) -> None:
-    AuditLog.objects.create(
-        user=request.user,
-        action=action,
-        entity=entity,
-        entity_id=entity_id,
-        ip_address=_client_ip(request),
-        metadata=metadata,
-    )
-
-
 def _audit_operation(request, action: str, tx: Transaction) -> None:
-    _audit(
+    audit.record(
         request,
         action,
         entity="transaccion",
@@ -88,7 +65,7 @@ class AccountsView(BankingView):
         account = services.open_savings_account(
             request.user, currency=serializer.validated_data["currency"]
         )
-        _audit(
+        audit.record(
             request,
             "account.open",
             entity="cuenta",

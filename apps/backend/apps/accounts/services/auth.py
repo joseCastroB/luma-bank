@@ -21,7 +21,8 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from . import crypto, face_store
+from ..models import AuditLog
+from . import crypto, face_store, security_mail
 
 logger = logging.getLogger("luma.auth")
 User = get_user_model()
@@ -79,6 +80,15 @@ def _register_failure(user, *, facial: bool) -> bool:
         user.locked_until = timezone.now() + timedelta(minutes=settings.ACCOUNT_LOCK_MINUTES)
         locked = True
     user.save(update_fields=["failed_login_attempts", "failed_facial_attempts", "locked_until"])
+    if locked:
+        AuditLog.objects.create(
+            user=user,
+            action="account.lock",
+            entity="usuario",
+            entity_id=str(user.pk),
+            metadata={"locked_until": user.locked_until.isoformat()},
+        )
+        security_mail.notify_account_locked(user)
     return locked
 
 

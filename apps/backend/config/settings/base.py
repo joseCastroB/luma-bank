@@ -164,6 +164,7 @@ REST_FRAMEWORK = {
         "registro": "5/min",
         "login": "10/min",
         "transfer": "20/min",
+        "biometrics": "5/min",
     },
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
@@ -239,6 +240,17 @@ TOTP_ISSUER = env("TOTP_ISSUER", default="Luma Bank")
 LOGIN_MAX_FACIAL_ATTEMPTS = env.int("LOGIN_MAX_FACIAL_ATTEMPTS", default=2)
 LOGIN_MAX_TOTAL_ATTEMPTS = env.int("LOGIN_MAX_TOTAL_ATTEMPTS", default=5)
 ACCOUNT_LOCK_MINUTES = env.int("ACCOUNT_LOCK_MINUTES", default=30)
+
+# --- Correo (avisos de seguridad) ----------------------------------------
+EMAIL_BACKEND = env("EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
+EMAIL_HOST = env("EMAIL_HOST", default="localhost")
+EMAIL_PORT = env.int("EMAIL_PORT", default=587)
+EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
+EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
+# Se envia dentro de la peticion: un servidor caido no debe colgar el login.
+EMAIL_TIMEOUT = env.int("EMAIL_TIMEOUT", default=5)
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Luma Bank <no-reply@lumabank.example>")
 
 # --- Reglas de negocio -------------------------------------------------
 MIN_SIGNUP_AGE_YEARS = 18
