@@ -13,8 +13,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import LoginAttempt
-from .serializers import FacialLoginSerializer, PasswordLoginSerializer
-from .services import auth
+from .serializers import BiometricUpdateSerializer, FacialLoginSerializer, PasswordLoginSerializer
+from .services import audit, auth, biometrics
 
 logger = logging.getLogger("luma.auth")
 
@@ -22,9 +22,10 @@ GENERIC_FAIL = "No pudimos verificar tu identidad. Revisa los datos e intenta de
 
 
 def _meta(request) -> dict:
-    xff = request.META.get("HTTP_X_FORWARDED_FOR", "")
-    ip = xff.split(",")[0].strip() if xff else request.META.get("REMOTE_ADDR")
-    return {"ip_address": ip or None, "user_agent": request.META.get("HTTP_USER_AGENT", "")[:300]}
+    return {
+        "ip_address": audit.client_ip(request),
+        "user_agent": request.META.get("HTTP_USER_AGENT", "")[:300],
+    }
 
 
 def _log(identifier, method, outcome, *, user=None, suspicious=False, meta=None):
@@ -55,6 +56,17 @@ def _locked_response(user, identifier, method, meta):
                 "Cuenta bloqueada temporalmente por múltiples intentos fallidos. "
                 "Inténtalo más tarde."
             ),
+            "locked_until": user.locked_until,
+        },
+        status=status.HTTP_423_LOCKED,
+    )
+
+
+def _biometrics_locked_response(user):
+    return Response(
+        {
+            "detail": "Tu cuenta está bloqueada temporalmente por intentos fallidos.",
+            "code": "locked",
             "locked_until": user.locked_until,
         },
         status=status.HTTP_423_LOCKED,
@@ -186,4 +198,44 @@ class MeView(APIView):
             }
             for a in user.accounts.all()
         ]
-        return Response({**_user_public(user), "accounts": accounts})
+        face = getattr(user, "face_embedding", None)
+        return Response(
+            {
+                **_user_public(user),
+                "accounts": accounts,
+                "has_totp": user.has_totp,
+                "face_updated_at": face.updated_at if face else None,
+            }
+        )
+
+
+class BiometricUpdateView(APIView):
+    """Cambia el rostro del cliente: pide su código TOTP y una nueva prueba de vida."""
+
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "biometrics"
+
+    def post(self, request):
+        serializer = BiometricUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        v = serializer.validated_data
+        user = request.user
+
+        if auth.is_locked(user):
+            return _biometrics_locked_response(user)
+        if not auth.verify_totp(user, v["totp"]):
+            if auth._register_failure(user, facial=False):
+                return _biometrics_locked_response(user)
+            return Response(
+                {"detail": "Código de verificación incorrecto.", "code": "totp_invalid"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        auth.reset_failures(user)
+
+        embedding = biometrics.update_face(
+            request,
+            descriptor=v["face_descriptor"],
+            algorithm=v["descriptor_algorithm"],
+        )
+        return Response({"face_updated_at": embedding.updated_at})

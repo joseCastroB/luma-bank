@@ -193,8 +193,19 @@ export interface Me {
     balance: string;
     opened_at: string;
   }[];
+  has_totp: boolean;
+  face_updated_at: string | null;
 }
 export const getMe = () => apiGet<Me>("/api/v1/accounts/me/", true);
+
+export interface BiometricUpdatePayload {
+  totp: string;
+  liveness: { passed: boolean; checks: string[] };
+  face_descriptor: number[];
+  descriptor_algorithm: string;
+}
+export const updateBiometrics = (payload: BiometricUpdatePayload) =>
+  apiPost<{ face_updated_at: string }>("/api/v1/accounts/me/biometrics/", payload, true);
 
 // --- Banca: cuentas, saldo y TREA ------------------------------------
 

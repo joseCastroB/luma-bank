@@ -10,6 +10,7 @@ const LINKS = [
   { to: "/app", label: "Inicio", end: true },
   { to: "/app/transferir", label: "Transferir", end: false },
   { to: "/app/convertir", label: "Convertir", end: false },
+  { to: "/app/seguridad", label: "Seguridad", end: false },
 ];
 
 /** Área privada: navegación y cierre de sesión por inactividad. */
