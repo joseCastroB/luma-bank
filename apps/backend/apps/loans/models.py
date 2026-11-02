@@ -23,6 +23,15 @@ class Loan(models.Model):
     account = models.ForeignKey(
         "banking.Account", on_delete=models.PROTECT, related_name="loans", db_column="cuenta_id"
     )
+    # Transacción con la que se abonó el préstamo.
+    disbursement_transaction = models.OneToOneField(
+        "banking.Transaction",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="disbursed_loan",
+        db_column="transaccion_desembolso_id",
+    )
     principal = models.DecimalField(
         "monto solicitado", max_digits=14, decimal_places=2, db_column="monto_solicitado"
     )
@@ -93,14 +102,14 @@ class LoanInstallment(models.Model):
         max_length=16, choices=Status.choices, default=Status.PENDING, db_column="estado"
     )
     paid_at = models.DateTimeField(null=True, blank=True, db_column="fecha_pago")
-    # Movimiento de cuenta con el que se pagó la cuota.
+    # Transacción con la que se pagó la cuota.
     payment_transaction = models.OneToOneField(
         "banking.Transaction",
         on_delete=models.PROTECT,
         null=True,
         blank=True,
         related_name="loan_installment",
-        db_column="movimiento_pago_id",
+        db_column="transaccion_pago_id",
     )
 
     class Meta:

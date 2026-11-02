@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from apps.accounts.models import FaceEmbedding
+from apps.accounts.models import DniValidationLog, FaceEmbedding
 from apps.accounts.services import face_store
 from apps.banking.models import Account
 
@@ -100,6 +100,17 @@ class TestRegistro:
         assert emb.dimensions == 128
         assert Account.objects.filter(user=user, number=body["account_number"]).exists()
         assert len(_fake_minio) == 1
+
+    def test_links_previous_dni_validations_to_the_user(self, client, settings):
+        settings.DNI_VALIDATION_MODE = "mock"
+        client.post(reverse("accounts:validar-dni"), {"dni": "70111222"}, format="json")
+        assert DniValidationLog.objects.get(dni="70111222").user is None
+
+        assert (
+            client.post(reverse("accounts:registro"), _payload(), format="json").status_code == 201
+        )
+        user = User.objects.get(dni="70111222")
+        assert DniValidationLog.objects.get(dni="70111222").user == user
 
     def test_rejects_under_18(self, client, settings):
         settings.DNI_VALIDATION_MODE = "mock"

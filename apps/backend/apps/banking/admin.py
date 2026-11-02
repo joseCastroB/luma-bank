@@ -11,8 +11,7 @@ class AccountAdmin(admin.ModelAdmin):
     readonly_fields = ("opened_at",)
 
 
-from .models import Beneficiary, Transaction, Transfer  # noqa: E402
+from .models import Beneficiary, Transaction  # noqa: E402
 
 admin.site.register(Beneficiary)
-admin.site.register(Transfer)
 admin.site.register(Transaction)

@@ -48,6 +48,14 @@ class Card(models.Model):
     credit_limit = models.DecimalField(
         max_digits=14, decimal_places=2, null=True, blank=True, db_column="linea_credito"
     )
+    credit_used = models.DecimalField(
+        "saldo utilizado",
+        max_digits=14,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        db_column="saldo_utilizado",
+    )
     daily_limit = models.DecimalField(
         max_digits=14, decimal_places=2, default=2000, db_column="limite_diario"
     )
@@ -86,14 +94,14 @@ class CardTransaction(models.Model):
     card = models.ForeignKey(
         Card, on_delete=models.PROTECT, related_name="transactions", db_column="tarjeta_id"
     )
-    # Movimiento de cuenta que generó el consumo (solo cuando se liquida).
-    account_transaction = models.OneToOneField(
+    # Transacción que generó el consumo (solo cuando se liquida).
+    transaction = models.OneToOneField(
         "banking.Transaction",
         on_delete=models.PROTECT,
         null=True,
         blank=True,
         related_name="card_transaction",
-        db_column="movimiento_id",
+        db_column="transaccion_id",
     )
     merchant = models.CharField("comercio", max_length=120, db_column="comercio")
     amount = models.DecimalField(max_digits=14, decimal_places=2, db_column="monto")
@@ -101,8 +109,8 @@ class CardTransaction(models.Model):
     status = models.CharField(
         max_length=16, choices=Status.choices, default=Status.AUTHORIZED, db_column="estado"
     )
-    authorization_code = models.CharField(
-        max_length=12, blank=True, default="", db_column="codigo_autorizacion"
+    authorization_code = models.CharField(  # noqa: DJ001 (NULL segun el modelo v3)
+        max_length=12, null=True, blank=True, db_column="codigo_autorizacion"
     )
     created_at = models.DateTimeField(auto_now_add=True, db_column="fecha_creacion")
 

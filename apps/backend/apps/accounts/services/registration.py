@@ -21,7 +21,7 @@ from django.db import transaction
 
 from apps.banking.services import open_account
 
-from ..models import FaceEmbedding
+from ..models import DniValidationLog, FaceEmbedding
 from . import crypto, face_store
 from .identity import DniData, validate_dni
 
@@ -78,6 +78,7 @@ def register_customer(
             dimensions=len(face_descriptor),
         )
         account = open_account(user)
+        DniValidationLog.objects.filter(dni=identity.dni, user__isnull=True).update(user=user)
     except Exception:
         face_store.delete_embedding(bucket, object_key)
         raise

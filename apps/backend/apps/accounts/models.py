@@ -67,8 +67,8 @@ class User(AbstractUser):
     )
 
     # Secreto TOTP cifrado (AES-256-GCM + base64). Ver services/crypto.py.
-    totp_secret_encrypted = models.CharField(
-        max_length=255, blank=True, default="", db_column="secreto_totp_cifrado"
+    totp_secret_encrypted = models.CharField(  # noqa: DJ001 (NULL segun el modelo v3)
+        max_length=255, null=True, blank=True, db_column="secreto_totp_cifrado"
     )
 
     # --- Política de intentos de login (HU03) ---
@@ -192,7 +192,16 @@ class DniValidationLog(models.Model):
         ERROR = "error", "error del servicio"
         CACHED = "cached", "desde caché"
 
-    dni = models.CharField(max_length=16, db_column="dni")
+    # Se llena cuando el DNI termina en un registro; antes de eso no hay usuario.
+    user = models.ForeignKey(
+        "accounts.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="dni_validations",
+        db_column="usuario_id",
+    )
+    dni = models.CharField(max_length=8, db_column="dni")
     mode = models.CharField(max_length=16, choices=Mode.choices, db_column="modo")
     result = models.CharField(max_length=16, choices=Result.choices, db_column="resultado")
     created_at = models.DateTimeField(default=timezone.now, db_column="fecha_creacion")
@@ -220,6 +229,14 @@ class Notification(models.Model):
         on_delete=models.CASCADE,
         related_name="notifications",
         db_column="usuario_id",
+    )
+    transaction = models.ForeignKey(
+        "banking.Transaction",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="notifications",
+        db_column="transaccion_id",
     )
     kind = models.CharField(max_length=16, choices=Kind.choices, db_column="tipo")
     title = models.CharField(max_length=120, db_column="titulo")
