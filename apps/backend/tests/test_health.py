@@ -32,6 +32,8 @@ def test_prod_settings_reject_mock_mode():
         "DJANGO_SETTINGS_MODULE": "config.settings.prod",
         "DNI_VALIDATION_MODE": "mock",
         "DJANGO_SECRET_KEY": "x" * 60,
+        # Clave de cifrado valida: asi el arranque solo puede fallar por el modo mock.
+        "FACE_EMBEDDING_ENCRYPTION_KEY": "k" * 44,
         "DJANGO_ALLOWED_HOSTS": "luma.example.com",
         "DATABASE_URL": "postgres://luma:luma@localhost:5432/luma",
         "REDIS_URL": "redis://localhost:6379/0",
