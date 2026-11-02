@@ -40,6 +40,17 @@ Asistente de 5 pasos:
 
 Área privada `/app` (`GET /api/v1/accounts/me/`, requiere JWT): perfil + cuentas.
 
+### Seguridad de la cuenta
+
+- **HU05, bloqueo:** a los 5 fallos la cuenta se bloquea 30 minutos y se avisa por
+  correo (en desarrollo, se imprime en la consola del backend). Un administrador la
+  desbloquea con la acción "Desbloquear cuentas seleccionadas" del admin; queda en
+  la bitácora de auditoría, que el admin solo puede leer.
+- **HU06, biometría:** `POST /api/v1/accounts/me/biometrics/` (pantalla `/app/seguridad`)
+  pide el código TOTP y una nueva prueba de vida, reemplaza el vector en MinIO y deja
+  la fecha y hora en la bitácora.
+- En producción, define las variables `EMAIL_*` de `.env.example` para enviar correos.
+
 ### Banca (`/app`, API en `/api/v1/banking/`, requiere JWT)
 
 Los números de HU son los del backlog (`Historias_de_Usuario_LumaBankv2`).

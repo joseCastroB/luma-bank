@@ -10,6 +10,7 @@ import { AppHome } from "@/features/app/AppHome";
 import { AccountDetailPage } from "@/features/app/AccountDetailPage";
 import { TransferPage } from "@/features/app/TransferPage";
 import { ExchangePage } from "@/features/app/ExchangePage";
+import { SecurityPage } from "@/features/app/SecurityPage";
 import { EstadoPage } from "@/features/system/EstadoPage";
 import { NotFoundPage } from "@/features/system/NotFoundPage";
 
@@ -37,6 +38,7 @@ export const router = createBrowserRouter([
           { path: "cuentas/:number", element: <AccountDetailPage /> },
           { path: "transferir", element: <TransferPage /> },
           { path: "convertir", element: <ExchangePage /> },
+          { path: "seguridad", element: <SecurityPage /> },
         ],
       },
     ],

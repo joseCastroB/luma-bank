@@ -123,6 +123,22 @@ class FacialLoginSerializer(serializers.Serializer):
     liveness = LivenessSerializer()
 
 
+class BiometricUpdateSerializer(serializers.Serializer):
+    totp = serializers.CharField(max_length=6)
+    liveness = LivenessSerializer()
+    face_descriptor = _DescriptorField()
+    descriptor_algorithm = serializers.CharField(
+        required=False,
+        default="face-api ssdMobilenetv1 128d",
+        max_length=128,
+    )
+
+    def validate_liveness(self, value: dict) -> dict:
+        if not value.get("passed"):
+            raise serializers.ValidationError("No se completó la prueba de vida.")
+        return value
+
+
 class PasswordLoginSerializer(serializers.Serializer):
     identifier = serializers.CharField()
     password = serializers.CharField(write_only=True, style={"input_type": "password"})
