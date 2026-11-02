@@ -20,8 +20,8 @@ para saber el entorno completo, sin abrir cada Dockerfile.
 | Node.js           | `24` (imagen `node:24-alpine`)                 | `apps/frontend/Dockerfile`, override   | 2026-09-07 | Active LTS. Último parche de la serie 24 |
 | PostgreSQL        | `18` (imagen `postgres:18`)                    | `docker-compose.yml`                   | 2026-09-07 | Último minor de PG 18 |
 | Valkey            | `8` (imagen `valkey/valkey:8`)                 | `docker-compose.yml`                   | 2026-09-07 | Fork open source de Redis |
-| MinIO (servidor)  | `RELEASE.2025-09-07T16-13-09Z`                 | `docker-compose.yml`                   | 2026-09-07 | Tag por fecha, **nunca** `latest`. Ver nota (1) |
-| MinIO Client (mc) | `RELEASE.2025-08-13T08-35-41Z`                 | `docker-compose.yml` (`minio-init`)    | 2026-09-07 | Crea el bucket de embeddings |
+| MinIO (servidor)  | `RELEASE.2025-09-07T16-13-09Z`                 | `docker/minio/Dockerfile`              | 2026-09-07 | Tag por fecha, **nunca** `latest`. Ver nota (1) |
+| MinIO Client (mc) | `RELEASE.2025-08-13T08-35-41Z`                 | `docker/minio/Dockerfile`              | 2026-09-07 | Crea el bucket de embeddings |
 | Nginx             | `1.30-alpine`                                  | `apps/frontend/Dockerfile`            | 2026-09-07 | Rama estable; sirve el build de producción |
 
 **Política de pin de imágenes base:** `python:3.13-slim`, `node:24-alpine`,
@@ -31,9 +31,11 @@ para saber el entorno completo, sin abrir cada Dockerfile.
 parche exacto con `==`. MinIO y su cliente van fijados a un tag por fecha
 exacto por pedido explícito del equipo.
 
-(1) MinIO community dejó de publicar binarios/imágenes nuevas tras
-`RELEASE.2025-09-07`. Si se necesita una versión más nueva, evaluar construir
-desde fuente o migrar a un fork mantenido. Documentar el cambio aquí.
+(1) MinIO community dejó de publicar versiones tras `RELEASE.2025-09-07`, sus
+repositorios están archivados y `minio/minio` y `minio/mc` ya no existen en
+Docker Hub. Por eso `docker/minio/Dockerfile` compila estos mismos tags desde el
+código fuente oficial y comprueba su commit. Esa versión ya no recibe parches de
+seguridad: para producción, evaluar un fork mantenido o un S3 administrado.
 
 ---
 
@@ -110,6 +112,8 @@ Sin `^` ni `~`: versión exacta. El `package-lock.json` fija además todo el ár
 | @types/react                   | 19.2.18   | dev  |
 | @types/react-dom               | 19.2.7    | dev  |
 | @types/node                    | 26.4.1    | dev  |
+| @playwright/test               | 1.64.1    | dev  |
+| @axe-core/playwright           | 4.14.0    | dev  |
 
 ---
 

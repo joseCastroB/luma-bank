@@ -134,7 +134,7 @@ function Badge({ on, children }: { on?: boolean; children: React.ReactNode }) {
     <span
       className={
         "rounded-full px-2 py-1 " +
-        (on ? "bg-cyan/20 text-white" : "bg-white/10 text-white/40")
+        (on ? "bg-cyan/20 text-white" : "bg-white/10 text-white/70")
       }
     >
       {on ? "✓ " : ""}

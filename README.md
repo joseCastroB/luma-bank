@@ -140,6 +140,23 @@ docker compose run --rm backend ruff check .
 
 Con `make` instalado (Git Bash / WSL / Linux / macOS) hay atajos: `make help`.
 
+### Pruebas E2E y de usabilidad (Playwright)
+
+Con el stack de desarrollo levantado y las migraciones aplicadas:
+
+```bash
+cd apps/frontend
+npm ci
+npx playwright install chromium
+npm run test:e2e
+```
+
+Antes de cada corrida, `manage.py preparar_e2e` reinicia a los clientes de prueba
+`e2e*@lumabank.test` en la base local (solo funciona con `DEBUG` activo). Los
+reportes HTML, JSON y JUnit, con una captura por prueba, quedan en `e2e-resultados/`.
+La cámara simulada no supera la prueba de vida: el login facial y el alta completa
+se prueban en la API, no en el navegador.
+
 ---
 
 ## Solución de problemas

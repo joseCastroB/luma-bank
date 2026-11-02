@@ -18,7 +18,7 @@ export function TextField({ label, error, hint, className = "", ...props }: Prop
         id={id}
         className={
           "rounded-lg border bg-charcoal px-3 py-2.5 text-sm text-white outline-none transition " +
-          "placeholder:text-white/30 focus:border-cyan " +
+          "placeholder:text-white/50 focus:border-cyan " +
           (error ? "border-red-500/70" : "border-white/15") +
           " " +
           className
@@ -26,7 +26,7 @@ export function TextField({ label, error, hint, className = "", ...props }: Prop
         aria-invalid={error ? true : undefined}
         {...props}
       />
-      {hint && !error && <p className="text-xs text-white/45">{hint}</p>}
+      {hint && !error && <p className="text-xs text-white/60">{hint}</p>}
       {error && <p className="text-xs font-medium text-red-400">{error}</p>}
     </div>
   );

@@ -43,7 +43,7 @@ function Hero() {
               Banca por Internet
             </ButtonLink>
           </div>
-          <p className="mt-5 text-sm text-white/40">
+          <p className="mt-5 text-sm text-white/60">
             Identidad validada con RENIEC · Sin costo de apertura ni mantenimiento
           </p>
         </div>
@@ -98,7 +98,7 @@ function AccionCard({ accion }: { accion: Accion }) {
       <div className="flex items-start justify-between gap-3">
         <h3 className="text-lg font-semibold text-white">{accion.titulo}</h3>
         {accion.pronto ? (
-          <span className="shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-semibold text-white/50">
+          <span className="shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-semibold text-white/70">
             Pronto
           </span>
         ) : (
@@ -114,7 +114,7 @@ function AccionCard({ accion }: { accion: Accion }) {
   const base = "group rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition";
 
   if (accion.pronto || !accion.to) {
-    return <div className={`${base} opacity-60`}>{inner}</div>;
+    return <div className={`${base} border-dashed`}>{inner}</div>;
   }
   return (
     <Link

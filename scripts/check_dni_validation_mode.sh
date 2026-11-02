@@ -16,7 +16,7 @@
 set -euo pipefail
 
 # Rutas donde 'mock' SI esta permitido (desarrollo / tests / documentacion).
-ALLOWLIST_REGEX='^(\.env\.example|docker-compose\.override\.yml|apps/backend/config/settings/dev\.py|apps/backend/pyproject\.toml|apps/backend/tests/.*|apps/backend/apps/.*/tests/.*|scripts/check_dni_validation_mode\.sh|README\.md|VERSIONS\.md|\.github/workflows/.*)$'
+ALLOWLIST_REGEX='^(\.env\.example|docker-compose\.override\.yml|apps/backend/config/settings/dev\.py|apps/backend/pyproject\.toml|apps/backend/conftest\.py|apps/backend/tests/.*|apps/backend/apps/.*/tests/.*|scripts/check_dni_validation_mode\.sh|README\.md|VERSIONS\.md|\.github/workflows/.*)$'
 
 # DNI_VALIDATION_MODE seguido de = o : y luego (con comillas/espacios opcionales) mock
 PATTERN='DNI_VALIDATION_MODE[[:space:]]*[:=][[:space:]]*["'"'"' ]*mock'
