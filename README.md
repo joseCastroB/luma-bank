@@ -69,7 +69,8 @@ Los números de HU son los del backlog (`Historias_de_Usuario_LumaBankv2`).
   JWT dura 5 min y se renueva solo con actividad (refresh de 10 min).
 - **Intereses:** `python manage.py devengar_intereses` devenga a diario y capitaliza
   a fin de mes. El servicio `scheduler` de Docker Compose lo corre cada hora; correrlo
-  varias veces no duplica intereses. Fuera de Compose, prográmalo como tarea periódica.
+  varias veces no duplica intereses. En producción lo corre el workflow
+  `.github/workflows/intereses.yml` cada día, con el secreto `SUPABASE_DATABASE_URL`.
 - **TREA y tipo de cambio:** se publican en las tablas `tasa_ahorro` y `tipo_cambio`
   (desde el admin). El tipo de cambio se consulta solo a SUNAT y, si falla, se usa la
   última publicación de los últimos 5 días.
