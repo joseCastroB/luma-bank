@@ -33,6 +33,7 @@ apps/backend/staticfiles/
 apps/backend/media/
 *.sqlite3
 db.sqlite3
+*.dump
 
 # ---------------------------------------------------------------------------
 # Node / Vite
