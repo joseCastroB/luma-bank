@@ -163,6 +163,7 @@ REST_FRAMEWORK = {
         "dni_validation": "15/min",
         "registro": "5/min",
         "login": "10/min",
+        "transfer": "20/min",
     },
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
@@ -170,10 +171,13 @@ REST_FRAMEWORK = {
 }
 
 from datetime import timedelta  # noqa: E402
+from decimal import Decimal  # noqa: E402
 
+# HU de inactividad: el frontend cierra la sesion a los 5 minutos y el servidor
+# lo respalda: quien deja de renovar el token pierde la sesion aunque lo conserve.
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=env.int("JWT_ACCESS_MINUTES", default=5)),
+    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=env.int("JWT_REFRESH_MINUTES", default=10)),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": False,
 }
@@ -238,6 +242,21 @@ ACCOUNT_LOCK_MINUTES = env.int("ACCOUNT_LOCK_MINUTES", default=30)
 
 # --- Reglas de negocio -------------------------------------------------
 MIN_SIGNUP_AGE_YEARS = 18
+MAX_ACCOUNTS_PER_CURRENCY = env.int("MAX_ACCOUNTS_PER_CURRENCY", default=3)
+TRANSFER_MAX_AMOUNT = Decimal(env("TRANSFER_MAX_AMOUNT", default="100000"))
+# Transferencias a terceros por encima de este monto piden un codigo TOTP.
+TRANSFER_TOTP_THRESHOLD = {
+    "PEN": Decimal(env("TRANSFER_TOTP_THRESHOLD_PEN", default="1000")),
+    "USD": Decimal(env("TRANSFER_TOTP_THRESHOLD_USD", default="300")),
+}
+INTERBANK_FEE = Decimal(env("INTERBANK_FEE", default="0"))
+
+# --- Tipo de cambio ------------------------------------------------------
+EXCHANGE_RATE_URL = env(
+    "EXCHANGE_RATE_URL", default="https://www.sunat.gob.pe/a/txt/tipoCambio.txt"
+)
+# Sin publicacion mas reciente que esto, no se convierte con un valor viejo.
+EXCHANGE_RATE_MAX_AGE_DAYS = env.int("EXCHANGE_RATE_MAX_AGE_DAYS", default=5)
 
 # ---------------------------------------------------------------------------
 # Logging

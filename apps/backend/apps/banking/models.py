@@ -30,14 +30,73 @@ class Account(models.Model):
     )
     balance = models.DecimalField(max_digits=14, decimal_places=2, default=0, db_column="saldo")
     opened_at = models.DateTimeField(auto_now_add=True, db_column="fecha_apertura")
+    # Interés ganado que aún no se capitaliza; se suma al saldo al cierre de cada mes.
+    accrued_interest = models.DecimalField(
+        "interés devengado",
+        max_digits=14,
+        decimal_places=6,
+        default=0,
+        db_column="interes_devengado",
+    )
+    last_accrual_on = models.DateField(
+        "último devengo", null=True, blank=True, db_column="fecha_ultimo_devengo"
+    )
 
     class Meta:
         db_table = "cuenta"
         verbose_name = "cuenta"
         verbose_name_plural = "cuentas"
+        constraints = [
+            models.CheckConstraint(condition=models.Q(balance__gte=0), name="cuenta_saldo_gte_0"),
+        ]
 
     def __str__(self) -> str:
         return f"{self.number} ({self.user_id})"
+
+
+class SavingsRate(models.Model):
+    """TREA publicada para las cuentas de ahorro; rige desde `valid_from`."""
+
+    currency = models.CharField(max_length=3, db_column="moneda")
+    trea = models.DecimalField("TREA (%)", max_digits=5, decimal_places=2, db_column="trea")
+    valid_from = models.DateField("vigente desde", db_column="vigente_desde")
+
+    class Meta:
+        db_table = "tasa_ahorro"
+        verbose_name = "tasa de ahorro"
+        verbose_name_plural = "tasas de ahorro"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["currency", "valid_from"], name="tasa_ahorro_moneda_vigencia_unica"
+            ),
+            models.CheckConstraint(condition=models.Q(trea__gte=0), name="tasa_ahorro_trea_gte_0"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.currency} {self.trea}% desde {self.valid_from}"
+
+
+class ExchangeRate(models.Model):
+    """Tipo de cambio oficial (S/ por US$) publicado para un día."""
+
+    date = models.DateField("fecha", unique=True, db_column="fecha")
+    buy = models.DecimalField("compra", max_digits=10, decimal_places=4, db_column="compra")
+    sell = models.DecimalField("venta", max_digits=10, decimal_places=4, db_column="venta")
+    source = models.CharField(max_length=32, default="SUNAT", db_column="fuente")
+
+    class Meta:
+        db_table = "tipo_cambio"
+        verbose_name = "tipo de cambio"
+        verbose_name_plural = "tipos de cambio"
+        constraints = [
+            models.CheckConstraint(condition=models.Q(buy__gt=0), name="tipo_cambio_compra_gt_0"),
+            models.CheckConstraint(
+                condition=models.Q(sell__gte=models.F("buy")), name="tipo_cambio_venta_gte_compra"
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.date}: compra {self.buy} / venta {self.sell}"
 
 
 class Beneficiary(models.Model):
@@ -79,6 +138,7 @@ class Transaction(models.Model):
     Cargo (consumo, pago de cuota): solo `source_account`.
     Entre cuentas de Luma Bank: ambas cuentas.
     Interbancaria: `source_account` y los campos `external_destination_*`.
+    Conversión: `amount` está en `currency`; lo abonado, en los campos `destination_*`.
 
     `amount` siempre es positivo; el sentido lo dan las cuentas. Una operación
     completada no se edita: un error se corrige con un extorno.
@@ -145,6 +205,25 @@ class Transaction(models.Model):
     concept = models.CharField(max_length=140, blank=True, default="", db_column="concepto")
     status = models.CharField(
         max_length=16, choices=Status.choices, default=Status.PENDING, db_column="estado"
+    )
+    exchange_rate = models.DecimalField(
+        "tipo de cambio aplicado",
+        max_digits=10,
+        decimal_places=4,
+        null=True,
+        blank=True,
+        db_column="tipo_cambio",
+    )
+    destination_amount = models.DecimalField(
+        "monto abonado",
+        max_digits=14,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        db_column="monto_destino",
+    )
+    destination_currency = models.CharField(  # noqa: DJ001 (NULL si no hay conversion)
+        max_length=3, null=True, blank=True, db_column="moneda_destino"
     )
     source_balance_after = models.DecimalField(
         "saldo resultante de origen",
