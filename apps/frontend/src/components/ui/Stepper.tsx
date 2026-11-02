@@ -12,7 +12,7 @@ export function Stepper({ steps, current }: { steps: string[]; current: number }
                   ? "bg-cyan/25 text-cyan"
                   : state === "active"
                     ? "bg-cyan text-ink"
-                    : "bg-white/10 text-white/40")
+                    : "bg-white/10 text-white/70")
               }
             >
               {state === "done" ? "✓" : i + 1}

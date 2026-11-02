@@ -56,17 +56,17 @@ export function AccountDetailPage() {
                 <dd className="text-lg font-semibold text-white">
                   {formatMoney(account.balance, account.currency)}
                 </dd>
-                <p className="mt-1 text-xs text-white/50">
+                <dd className="mt-1 text-xs text-white/50">
                   Intereses por capitalizar: {formatMoney(account.accrued_interest, account.currency)}
-                </p>
+                </dd>
               </div>
               {account.savings_rate && (
                 <div>
                   <dt className="text-xs text-white/50">TREA vigente</dt>
                   <dd className="text-lg font-semibold text-cyan">{account.savings_rate.trea}%</dd>
-                  <p className="mt-1 text-xs text-white/50">
+                  <dd className="mt-1 text-xs text-white/50">
                     Desde {formatDate(account.savings_rate.valid_from)}
-                  </p>
+                  </dd>
                 </div>
               )}
             </dl>
@@ -199,7 +199,7 @@ function MovementRow({ movement }: { movement: Movement }) {
         {movement.exchange_rate && (
           <p className="text-xs text-white/50">Tipo de cambio: {movement.exchange_rate}</p>
         )}
-        <p className="font-mono text-xs break-all text-white/40">{movement.operation_code}</p>
+        <p className="font-mono text-xs break-all text-white/60">{movement.operation_code}</p>
       </div>
       <div className="ml-auto text-right">
         <p className={`text-sm font-semibold ${isDebit ? "text-white" : "text-cyan"}`}>
