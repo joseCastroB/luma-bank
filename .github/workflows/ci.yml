@@ -103,6 +103,13 @@ jobs:
           node-version: "24"
           cache: npm
           cache-dependency-path: apps/frontend/package-lock.json
+      # Antes del stack: Docker crea como root la carpeta node_modules que monta el
+      # contenedor del frontend, y despues npm ci no podria reemplazarla.
+      - name: Instalar Playwright
+        working-directory: apps/frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
       - name: Levantar el stack de desarrollo
         run: |
           cp .env.example .env
@@ -110,11 +117,6 @@ jobs:
           curl --silent --show-error --fail --retry 40 --retry-delay 5 --retry-all-errors -o /dev/null http://localhost:8000/api/health/
           curl --silent --show-error --fail --retry 40 --retry-delay 5 --retry-all-errors -o /dev/null http://localhost:5173/
           docker compose exec -T backend python manage.py migrate --noinput
-      - name: Instalar Playwright
-        working-directory: apps/frontend
-        run: |
-          npm ci
-          npx playwright install --with-deps chromium
       - name: Pruebas E2E y de usabilidad
         working-directory: apps/frontend
         run: npm run test:e2e
