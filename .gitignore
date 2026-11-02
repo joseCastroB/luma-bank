@@ -41,6 +41,7 @@ db.sqlite3
 node_modules/
 apps/frontend/dist/
 apps/frontend/.vite/
+e2e-resultados/
 *.tsbuildinfo
 npm-debug.log*
 yarn-debug.log*

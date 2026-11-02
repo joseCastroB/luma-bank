@@ -110,6 +110,8 @@ Sin `^` ni `~`: versión exacta. El `package-lock.json` fija además todo el ár
 | @types/react                   | 19.2.18   | dev  |
 | @types/react-dom               | 19.2.7    | dev  |
 | @types/node                    | 26.4.1    | dev  |
+| @playwright/test               | 1.64.1    | dev  |
+| @axe-core/playwright           | 4.14.0    | dev  |
 
 ---
 

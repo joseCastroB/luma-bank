@@ -91,6 +91,43 @@ jobs:
       - name: Type check + build
         run: npm run build
 
+  e2e:
+    name: E2E y usabilidad (Playwright)
+    runs-on: ubuntu-24.04
+    needs: guard-dni-mode
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: apps/frontend/package-lock.json
+      - name: Levantar el stack de desarrollo
+        run: |
+          cp .env.example .env
+          docker compose up -d --build backend frontend
+          curl --silent --show-error --fail --retry 40 --retry-delay 5 --retry-all-errors -o /dev/null http://localhost:8000/api/health/
+          curl --silent --show-error --fail --retry 40 --retry-delay 5 --retry-all-errors -o /dev/null http://localhost:5173/
+          docker compose exec -T backend python manage.py migrate --noinput
+      - name: Instalar Playwright
+        working-directory: apps/frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Pruebas E2E y de usabilidad
+        working-directory: apps/frontend
+        run: npm run test:e2e
+      - name: Guardar los reportes
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-resultados
+          path: |
+            e2e-resultados/
+            !e2e-resultados/sesion.json
+          retention-days: 30
+
   docker-build:
     name: Docker build (imagenes de produccion)
     runs-on: ubuntu-24.04

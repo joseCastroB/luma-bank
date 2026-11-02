@@ -24,6 +24,10 @@ CSRF_TRUSTED_ORIGINS = list(
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
+# En dev, StrictMode duplica las peticiones de la SPA y las pruebas E2E navegan
+# muy rápido. Los límites de login, registro y transferencias no cambian.
+REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]["user"] = "1000/min"
+
 # Navegable en el browser al desarrollar la API.
 REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [
     "rest_framework.renderers.JSONRenderer",
