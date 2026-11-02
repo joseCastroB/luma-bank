@@ -28,6 +28,14 @@ services:
     ports:
       - "8000:8000"
 
+  scheduler:
+    build:
+      target: dev
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.dev
+    volumes:
+      - ./apps/backend:/app
+
   frontend:
     build: !reset null
     image: node:24-alpine

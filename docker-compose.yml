@@ -95,6 +95,24 @@ services:
       retries: 5
       start_period: 20s
 
+  # Devenga intereses de las cuentas de ahorro; correrlo seguido no los duplica.
+  scheduler:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+      target: runtime
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-config.settings.prod}
+    command: ["sh", "-c", "while true; do python manage.py devengar_intereses; sleep 3600; done"]
+    healthcheck:
+      disable: true
+    depends_on:
+      backend:
+        condition: service_healthy
+
   frontend:
     build:
       context: ./apps/frontend

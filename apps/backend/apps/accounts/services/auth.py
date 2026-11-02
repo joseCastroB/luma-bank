@@ -64,6 +64,12 @@ def is_locked(user) -> bool:
 
 def _register_failure(user, *, facial: bool) -> bool:
     """Suma el fallo. Devuelve True si con esto la cuenta quedó bloqueada."""
+    # Un bloqueo ya vencido cierra el ciclo: los intentos vuelven a contar desde cero.
+    if user.locked_until and not is_locked(user):
+        user.failed_login_attempts = 0
+        user.failed_facial_attempts = 0
+        user.locked_until = None
+
     user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
     if facial:
         user.failed_facial_attempts = (user.failed_facial_attempts or 0) + 1

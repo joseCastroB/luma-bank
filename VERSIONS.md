@@ -72,6 +72,8 @@ desde fuente o migrar a un fork mantenido. Documentar el cambio aquí.
 | cryptography                   | 50.0.1    |
 | whitenoise                     | 6.12.0    |
 | requests                       | 2.34.2    |
+| reportlab                      | 5.1.0     |
+| pillow                         | 13.0.0    |
 
 ### Solo dev/test — `apps/backend/requirements-dev.txt`
 

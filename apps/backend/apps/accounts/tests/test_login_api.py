@@ -1,10 +1,11 @@
 """HU03 - login facial + método alterno (contraseña + TOTP) + bloqueos."""
 
-from datetime import date
+from datetime import date, timedelta
 
 import pyotp
 import pytest
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from apps.accounts.models import LoginAttempt
@@ -95,6 +96,33 @@ class TestFacialLogin:
         assert fifth.json()["locked_until"]
         # incluso con el rostro correcto, sigue bloqueada
         assert _facial(client, MATCH).status_code == 423
+
+    def test_expired_lock_restarts_the_count(self, client, customer):
+        for _ in range(5):
+            _facial(client, FAR)
+        user = customer.user
+        user.refresh_from_db()
+        user.locked_until = timezone.now() - timedelta(minutes=1)
+        user.save(update_fields=["locked_until"])
+
+        # Un solo fallo tras vencer el bloqueo no vuelve a bloquear la cuenta.
+        assert _facial(client, FAR).status_code == 401
+        user.refresh_from_db()
+        assert user.locked_until is None
+        assert user.failed_login_attempts == 1
+        assert user.failed_facial_attempts == 1
+
+    def test_lock_applies_again_after_a_new_cycle(self, client, customer):
+        for _ in range(5):
+            _facial(client, FAR)
+        user = customer.user
+        user.refresh_from_db()
+        user.locked_until = timezone.now() - timedelta(minutes=1)
+        user.save(update_fields=["locked_until"])
+
+        for _ in range(4):
+            assert _facial(client, FAR).status_code == 401
+        assert _facial(client, FAR).status_code == 423
 
 
 @pytest.mark.django_db
