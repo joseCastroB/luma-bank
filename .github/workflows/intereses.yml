@@ -1,0 +1,42 @@
+name: Intereses diarios
+
+# Devenga el interes de las cuentas de ahorro y capitaliza a fin de mes.
+# Correrlo de nuevo no duplica intereses: cada dia procesado queda marcado en la cuenta.
+on:
+  schedule:
+    # 06:00 UTC = 01:00 en Lima, cuando el dia anterior ya termino.
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: intereses-diarios
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  devengar:
+    name: Devengar intereses
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/backend
+    env:
+      DJANGO_SETTINGS_MODULE: config.settings.prod
+      DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
+      # Unico secreto real: los settings de produccion exigen estas variables para
+      # arrancar, pero este comando no firma, no descifra y no atiende peticiones.
+      DJANGO_SECRET_KEY: no-se-usa-en-este-comando
+      DJANGO_ALLOWED_HOSTS: localhost
+      FACE_EMBEDDING_ENCRYPTION_KEY: no-se-usa-en-este-comando
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: apps/backend/requirements.txt
+      - run: pip install -r requirements.txt
+      - run: python manage.py devengar_intereses
