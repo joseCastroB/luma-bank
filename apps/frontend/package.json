@@ -12,7 +12,8 @@
     "preview": "vite preview --host",
     "lint": "eslint .",
     "typecheck": "tsc -b",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:externos": "playwright test --config playwright.externos.config.ts"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "1.0.1",

@@ -87,6 +87,7 @@ seguridad: para producción, evaluar un fork mantenido o un S3 administrado.
 | ruff           | 0.16.6   |
 | factory-boy    | 3.3.3    |
 | responses      | 0.26.3   |
+| aiosmtpd       | 1.4.6    |
 
 ---
 

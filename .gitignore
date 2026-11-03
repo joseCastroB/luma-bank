@@ -31,6 +31,7 @@ coverage.xml
 htmlcov/
 apps/backend/staticfiles/
 apps/backend/media/
+apps/backend/reportes/
 *.sqlite3
 db.sqlite3
 *.dump
