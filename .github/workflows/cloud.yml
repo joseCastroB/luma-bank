@@ -1,0 +1,46 @@
+name: Validacion en Cloud
+
+# Prueba el sistema desplegado, solo con lecturas. Se lanza a mano desde la pestana Actions.
+# Los casos con sesion necesitan los secretos E2E_CLOUD_*; sin ellos, se omiten.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: validacion-cloud
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  cloud:
+    name: Playwright contra Cloud
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/frontend
+    env:
+      E2E_CLOUD_USUARIO: ${{ secrets.E2E_CLOUD_USUARIO }}
+      E2E_CLOUD_CLAVE: ${{ secrets.E2E_CLOUD_CLAVE }}
+      E2E_CLOUD_TOTP: ${{ secrets.E2E_CLOUD_TOTP }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: apps/frontend/package-lock.json
+      - name: Instalar Playwright
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Pruebas contra Cloud
+        run: npm run test:cloud
+      - name: Guardar los reportes
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloud-resultados
+          path: e2e-resultados/cloud/
+          retention-days: 30

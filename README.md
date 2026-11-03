@@ -177,6 +177,17 @@ La primera usa MinIO (con un bucket temporal), Valkey y un servidor SMTP local. 
 dos consultan a SUNAT y a los CDN de los modelos por internet, así que un fallo puede ser
 del proveedor. LionAPI nunca se llama desde las pruebas, porque consume créditos reales.
 
+### Validación en Cloud
+
+```bash
+cd apps/frontend; npm run test:cloud
+```
+
+Prueba el sistema desplegado solo con lecturas: no valida DNI, no registra clientes y no
+mueve dinero. El workflow `Validacion en Cloud` hace lo mismo desde la pestaña Actions. Los
+casos con sesión necesitan una cuenta de prueba en `E2E_CLOUD_USUARIO`, `E2E_CLOUD_CLAVE` y
+`E2E_CLOUD_TOTP` (el secreto TOTP en base32); sin esas variables, se omiten.
+
 ---
 
 ## Solución de problemas

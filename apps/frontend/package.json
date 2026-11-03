@@ -13,7 +13,8 @@
     "lint": "eslint .",
     "typecheck": "tsc -b",
     "test:e2e": "playwright test",
-    "test:externos": "playwright test --config playwright.externos.config.ts"
+    "test:externos": "playwright test --config playwright.externos.config.ts",
+    "test:cloud": "playwright test --config playwright.cloud.config.ts"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "1.0.1",

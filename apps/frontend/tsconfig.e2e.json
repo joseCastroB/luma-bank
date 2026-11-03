@@ -19,5 +19,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["e2e", "playwright.config.ts", "playwright.externos.config.ts"]
+  "include": ["e2e", "playwright.config.ts", "playwright.externos.config.ts", "playwright.cloud.config.ts"]
 }
