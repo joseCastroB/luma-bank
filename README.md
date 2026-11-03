@@ -157,6 +157,26 @@ reportes HTML, JSON y JUnit, con una captura por prueba, quedan en `e2e-resultad
 La cámara simulada no supera la prueba de vida: el login facial y el alta completa
 se prueban en la API, no en el navegador.
 
+### Pruebas de integración
+
+El `pytest` normal no toca servicios reales. Estas sí, con el stack levantado:
+
+```bash
+docker compose exec backend pytest -m integracion -v
+```
+
+```bash
+docker compose exec backend pytest -m externo -v
+```
+
+```bash
+cd apps/frontend; npm run test:externos
+```
+
+La primera usa MinIO (con un bucket temporal), Valkey y un servidor SMTP local. Las otras
+dos consultan a SUNAT y a los CDN de los modelos por internet, así que un fallo puede ser
+del proveedor. LionAPI nunca se llama desde las pruebas, porque consume créditos reales.
+
 ---
 
 ## Solución de problemas

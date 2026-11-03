@@ -19,8 +19,11 @@ import pytest  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
-def _locmem_cache(settings):
+def _locmem_cache(request, settings):
     """Los tests no dependen de un Valkey real: caché en memoria y limpia."""
+    if request.node.get_closest_marker("integracion") or request.node.get_closest_marker("externo"):
+        yield
+        return
     settings.CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
     from django.core.cache import cache
 

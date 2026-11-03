@@ -11,7 +11,11 @@ requires-python = "==3.13.*"
 DJANGO_SETTINGS_MODULE = "config.settings.dev"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
 testpaths = ["apps", "tests"]
-addopts = "-ra --strict-markers"
+addopts = '-ra --strict-markers -m "not integracion and not externo"'
+markers = [
+    "integracion: usa MinIO, Valkey y SMTP reales (pytest -m integracion)",
+    "externo: consulta servicios por internet (pytest -m externo)",
+]
 
 [tool.ruff]
 target-version = "py313"

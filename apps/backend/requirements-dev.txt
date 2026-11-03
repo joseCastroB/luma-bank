@@ -8,3 +8,4 @@ pytest-cov==7.1.0
 ruff==0.16.6                       # linter + formatter
 factory-boy==3.3.3                 # factories para tests
 responses==0.26.3                  # mock de HTTP (LionAPI en tests - NUNCA llamadas reales)
+aiosmtpd==1.4.6                    # servidor SMTP local para las pruebas de integracion
