@@ -33,10 +33,10 @@ function base32(texto: string): Buffer {
 }
 
 /** Código TOTP vigente (RFC 6238), el mismo que mostraría la app de autenticación. */
-export function codigoTotp(): string {
+export function codigoTotp(secreto = SECRETO_TOTP): string {
   const contador = Buffer.alloc(8);
   contador.writeBigUInt64BE(BigInt(Math.floor(Date.now() / 1000 / 30)));
-  const hmac = createHmac("sha1", base32(SECRETO_TOTP)).update(contador).digest();
+  const hmac = createHmac("sha1", base32(secreto)).update(contador).digest();
   const inicio = hmac[hmac.length - 1] & 0xf;
   const valor = hmac.readUInt32BE(inicio) & 0x7fffffff;
   return String(valor % 1_000_000).padStart(6, "0");
